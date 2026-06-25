@@ -17,43 +17,43 @@
       <span class="logo-name">InfraCivic <b>2.0</b></span>
     </div>
     <nav>
-      <a href="#" class="nav-item active">
+      <a href="#" class="nav-item active" data-route="dashboard">
         <iconify-icon class="ni" icon="mdi:home-outline"></iconify-icon>
         <span>Dashboard</span>
       </a>
-      <a href="#" class="nav-item">
+      <a href="#" class="nav-item" data-route="packages">
         <iconify-icon class="ni" icon="mdi:shield-check-outline"></iconify-icon>
         <span>Packages</span>
       </a>
-      <a href="#" class="nav-item">
+      <a href="#" class="nav-item" data-route="works">
         <iconify-icon class="ni" icon="mdi:tools"></iconify-icon>
         <span>Works</span>
       </a>
-      <a href="#" class="nav-item">
+      <a href="#" class="nav-item" data-route="claims">
         <iconify-icon class="ni" icon="mdi:file-document-outline"></iconify-icon>
         <span>Claims</span>
       </a>
-      <a href="#" class="nav-item">
+      <a href="#" class="nav-item" data-route="payments">
         <iconify-icon class="ni" icon="mdi:credit-card-outline"></iconify-icon>
         <span>Payments</span>
       </a>
-      <a href="#" class="nav-item">
+      <a href="#" class="nav-item" data-route="concessionaires">
         <iconify-icon class="ni" icon="mdi:account-network-outline"></iconify-icon>
         <span>Concessionaires</span>
       </a>
-      <a href="#" class="nav-item">
+      <a href="#" class="nav-item" data-route="contractors">
         <iconify-icon class="ni" icon="mdi:account-group-outline"></iconify-icon>
         <span>Contractors</span>
       </a>
-      <a href="#" class="nav-item">
+      <a href="#" class="nav-item" data-route="reports">
         <iconify-icon class="ni" icon="mdi:chart-line"></iconify-icon>
         <span>Reports &amp; Analytics</span>
       </a>
-      <a href="#" class="nav-item">
+      <a href="#" class="nav-item" data-route="audit">
         <iconify-icon class="ni" icon="mdi:shield-key-outline"></iconify-icon>
         <span>Audit Trail</span>
       </a>
-      <a href="#" class="nav-item">
+      <a href="#" class="nav-item" data-route="settings">
         <iconify-icon class="ni" icon="mdi:cog-outline"></iconify-icon>
         <span>Settings</span>
       </a>
@@ -72,22 +72,23 @@
         <div id="toolbar">
           <div class="tb-left">
             <div class="view-toggle">
-              <button class="vbtn active" id="btn-map">Map View</button>
-              <button class="vbtn" id="btn-list">List View</button>
+              <button class="vbtn active" id="btn-map" type="button">Map View</button>
+              <button class="vbtn" id="btn-list" type="button">List View</button>
             </div>
           </div>
           <div class="tb-right">
-            <select class="t-sel">
-              <option>All Concessions</option><option>PLUS</option>
-              <option>LITRAK</option><option>SPRINT</option>
+            <select class="t-sel" id="concession-filter" aria-label="Filter by concession">
+              <option value="all">All Concessions</option><option value="PLUS">PLUS</option>
+              <option value="LITRAK">LITRAK</option><option value="SPRINT">SPRINT</option>
             </select>
-            <select class="t-sel">
-              <option>All Status</option><option>Critical</option>
-              <option>High</option><option>Medium</option><option>Low</option>
+            <select class="t-sel" id="status-filter" aria-label="Filter by status">
+              <option value="all">All Status</option><option value="critical">Critical</option>
+              <option value="high">High</option><option value="medium">Medium</option><option value="low">Low</option>
+              <option value="completed">Completed</option>
             </select>
-            <button class="t-filter">
+            <button class="t-filter" id="advanced-filter-btn" type="button" aria-expanded="false">
               <iconify-icon icon="mdi:filter-variant"></iconify-icon>
-              Filters
+              <span class="filter-label">Filters</span>
               <iconify-icon icon="mdi:filter-variant"></iconify-icon>
             </button>
           </div>
@@ -107,15 +108,15 @@
           <div class="cluster-row">
             <span class="leg-title" style="margin:0">CLUSTER VIEW</span>
             <label class="tog">
-              <input type="checkbox" checked />
+              <input type="checkbox" id="cluster-toggle" checked />
               <span class="tog-track"><span class="tog-thumb"></span></span>
             </label>
           </div>
           <p class="leg-title" style="margin-top:11px">ROAD LAYERS</p>
-          <label class="ck-row"><input type="checkbox" checked />Expressways</label>
-          <label class="ck-row"><input type="checkbox" checked />Federal Roads</label>
-          <label class="ck-row"><input type="checkbox" checked />State Roads</label>
-          <label class="ck-row"><input type="checkbox" checked />District Roads</label>
+          <label class="ck-row"><input type="checkbox" value="expressway" data-road-type checked />Expressways</label>
+          <label class="ck-row"><input type="checkbox" value="federal" data-road-type checked />Federal Roads</label>
+          <label class="ck-row"><input type="checkbox" value="state" data-road-type checked />State Roads</label>
+          <label class="ck-row"><input type="checkbox" value="district" data-road-type checked />District Roads</label>
         </div>
 
         <!-- Map chart container -->
@@ -128,9 +129,9 @@
 
         <!-- Zoom controls -->
         <div id="zoom-ctrls">
-          <button class="zbtn" id="zoom-in" title="Zoom in"><iconify-icon icon="lucide:plus"></iconify-icon></button>
-          <button class="zbtn" id="zoom-out" title="Zoom out"><iconify-icon icon="lucide:minus"></iconify-icon></button>
-          <button class="zbtn" title="Layer toggle"><iconify-icon icon="lucide:layers"></iconify-icon></button>
+          <button class="zbtn" id="zoom-in" type="button" title="Zoom in"><iconify-icon icon="lucide:plus"></iconify-icon></button>
+          <button class="zbtn" id="zoom-out" type="button" title="Zoom out"><iconify-icon icon="lucide:minus"></iconify-icon></button>
+          <button class="zbtn" type="button" title="Layer toggle"><iconify-icon icon="lucide:layers"></iconify-icon></button>
         </div>
       </div>
     </section>
@@ -144,10 +145,10 @@
       <div id="actions-panel">
         <p class="panel-title">QUICK ACTIONS</p>
         <div id="actions-grid">
-          <div class="act-card act-purple"><div class="act-ico"><iconify-icon icon="mdi:cube"></iconify-icon></div><span>Create Package</span></div>
-          <div class="act-card act-green"><div class="act-ico"><iconify-icon icon="mdi:map-marker"></iconify-icon></div><span>Register Defect</span></div>
-          <div class="act-card act-orange"><div class="act-ico"><iconify-icon icon="mdi:file-document"></iconify-icon></div><span>Track Claim</span></div>
-          <div class="act-card act-blue"><div class="act-ico"><iconify-icon icon="mdi:wallet"></iconify-icon></div><span>Payment Overview</span></div>
+          <div class="act-card act-purple" data-action="create-package" role="button" tabindex="0"><div class="act-ico"><iconify-icon icon="mdi:cube"></iconify-icon></div><span>Create Package</span></div>
+          <div class="act-card act-green" data-action="register-defect" role="button" tabindex="0"><div class="act-ico"><iconify-icon icon="mdi:map-marker"></iconify-icon></div><span>Register Defect</span></div>
+          <div class="act-card act-orange" data-action="track-claim" role="button" tabindex="0"><div class="act-ico"><iconify-icon icon="mdi:file-document"></iconify-icon></div><span>Track Claim</span></div>
+          <div class="act-card act-blue" data-action="payment-overview" role="button" tabindex="0"><div class="act-ico"><iconify-icon icon="mdi:wallet"></iconify-icon></div><span>Payment Overview</span></div>
         </div>
       </div>
     </div>
@@ -236,6 +237,16 @@
 <script src="https://code.iconify.design/iconify-icon/2.1.0/iconify-icon.min.js"></script>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script src="js/data.js"></script>
+<script src="js/state.js"></script>
+<script src="js/modal.js"></script>
+<script src="js/toast.js"></script>
+<script src="js/filters.js"></script>
+<script src="js/map.js"></script>
+<script src="js/list.js"></script>
+<script src="js/details.js"></script>
+<script src="js/quickActions.js"></script>
+<script src="js/routes.js"></script>
+<script src="js/render.js"></script>
 <script src="js/main.js"></script>
 </body>
 </html>
