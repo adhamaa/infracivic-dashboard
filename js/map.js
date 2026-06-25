@@ -157,6 +157,11 @@
     setTimeout(() => pulseIncidentMarker(id), 650);
   }
 
+  function clearFocusedRoute() {
+    activeRouteRequest += 1;
+    focusRouteLayer?.clearLayers();
+  }
+
   function drawFocusRoute(routePath, incident) {
     if (!focusRouteLayer) return;
     focusRouteLayer.clearLayers();
@@ -290,4 +295,5 @@
   IC.initMap = initMap;
   IC.pulseIncidentMarker = pulseIncidentMarker;
   IC.focusIncidentOnMap = focusIncidentOnMap;
+  IC.clearFocusedRoute = clearFocusedRoute;
 })();

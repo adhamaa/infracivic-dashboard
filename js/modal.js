@@ -39,6 +39,7 @@
 
   function closeModal() {
     if (root) root.hidden = true;
+    IC.clearFocusedRoute?.();
   }
 
   IC.initModal = initModal;
