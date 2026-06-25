@@ -96,6 +96,17 @@
     charts.delete(id);
   }
 
+  function chartBox(container) {
+    const rect = container.getBoundingClientRect();
+    const style = window.getComputedStyle(container);
+    const xPadding = parseFloat(style.paddingLeft) + parseFloat(style.paddingRight);
+    const yPadding = parseFloat(style.paddingTop) + parseFloat(style.paddingBottom);
+    return {
+      width: Math.max(0, Math.floor(rect.width - xPadding)),
+      height: Math.max(0, Math.floor(rect.height - yPadding)),
+    };
+  }
+
   function createChart(id, options) {
     const container = document.getElementById(id);
     if (!container) return;
@@ -105,9 +116,12 @@
       return;
     }
     container.innerHTML = '';
+    const size = chartBox(container);
+    const sizeOptions = size.width > 0 && size.height > 0 ? size : {};
     try {
       const chart = window.agCharts.AgCharts.create({
         container,
+        ...sizeOptions,
         background: { fill: 'transparent' },
         padding: { top: 10, right: 14, bottom: 10, left: 10 },
         animation: { enabled: !reducedMotion },

@@ -131,6 +131,7 @@
     IC.charts.createChart('op-defect-mix-chart', {
       type: 'donut',
       data,
+      padding: { top: 16, right: 22, bottom: 18, left: 22 },
       series: [{
         type: 'donut',
         data,
@@ -140,7 +141,7 @@
         sectorLabelKey: 'count',
         legendItemKey: 'category',
         innerRadiusRatio: 0.58,
-        outerRadiusRatio: 0.76,
+        outerRadiusRatio: 0.78,
         sectorSpacing: 2,
         cornerRadius: 3,
         fills: [IC.charts.palette.blue, IC.charts.palette.cyan, IC.charts.palette.green, IC.charts.palette.amber, IC.charts.palette.violet],
@@ -152,6 +153,7 @@
           fontSize: 10,
           formatter: params => `${shortDefectLabel(params.datum.category)} ${params.datum.count.toLocaleString('en-MY')}`,
         },
+        calloutLine: { length: 6, strokeWidth: 1.5 },
         sectorLabel: {
           enabled: false,
         },

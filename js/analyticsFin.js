@@ -61,7 +61,7 @@
         { type: 'category', position: 'left', label: { enabled: false } },
         { type: 'number', position: 'bottom', label: { enabled: false }, line: { enabled: false }, tick: { enabled: false } },
       ],
-      legend: { position: 'bottom' },
+      legend: { enabled: false },
     });
     const approvedRate = totals.submitted ? totals.approved / totals.submitted * 100 : 0;
     const releasedRate = totals.approved ? totals.released / totals.approved * 100 : 0;
@@ -99,18 +99,21 @@
 
   function renderBudgetBurn() {
     const data = concessionItems(D.BUDGET_BURN);
+    const maxBudget = Math.max(...data.flatMap(item => [item.allocated, item.spent, item.projected]), 1);
+    const budgetAxisMax = Math.ceil(maxBudget / 500) * 500;
     IC.charts.createChart('fin-budget-chart', {
       data,
+      padding: { top: 16, right: 32, bottom: 34, left: 54 },
       series: [
-        { type: 'bar', direction: 'horizontal', xKey: 'concession', yKey: 'allocated', yName: 'Allocated', fill: '#cbd5e1' },
-        { type: 'bar', direction: 'horizontal', xKey: 'concession', yKey: 'spent', yName: 'YTD Spent', fill: IC.charts.palette.blue },
-        { type: 'bar', direction: 'horizontal', xKey: 'concession', yKey: 'projected', yName: 'Projected', fill: IC.charts.palette.amber },
+        { type: 'bar', direction: 'horizontal', xKey: 'concession', yKey: 'allocated', yName: 'Plan', fill: '#cbd5e1' },
+        { type: 'bar', direction: 'horizontal', xKey: 'concession', yKey: 'spent', yName: 'Spent', fill: IC.charts.palette.blue },
+        { type: 'bar', direction: 'horizontal', xKey: 'concession', yKey: 'projected', yName: 'Forecast', fill: IC.charts.palette.amber },
       ],
       axes: [
         { type: 'category', position: 'left', label: { color: '#64748b', fontSize: 10 } },
-        { type: 'number', position: 'bottom', label: { formatter: params => `RM ${params.value}M`, color: '#64748b', fontSize: 10 } },
+        { type: 'number', position: 'bottom', min: 0, max: budgetAxisMax, nice: false, label: { formatter: params => `RM ${params.value}M`, color: '#64748b', fontSize: 10 } },
       ],
-      legend: { position: 'bottom' },
+      legend: { position: 'bottom', spacing: 4, item: { marker: { size: 7 }, label: { fontSize: 9 } } },
     });
   }
 
