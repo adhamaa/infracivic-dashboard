@@ -10,6 +10,8 @@
   let currentBase;
   const baseLayers = {};
   const markerRefs = new Map();
+  const routeCache = new Map();
+  let activeRouteRequest = 0;
 
   async function initMap() {
     const el = document.getElementById('map-chart');
@@ -46,7 +48,7 @@
     setTimeout(() => map.invalidateSize(), 0);
 
     markerLayer = L.layerGroup().addTo(map);
-  focusRouteLayer = L.layerGroup().addTo(map);
+    focusRouteLayer = L.layerGroup().addTo(map);
     await initStateLayer();
     renderMarkers();
     bindMapControls();
@@ -141,39 +143,43 @@
     setTimeout(() => el.classList.remove('pulse-marker'), 900);
   }
 
-  function focusIncidentOnMap(id) {
+  async function focusIncidentOnMap(id) {
     const incident = IC.getIncident(id);
     if (!map || !incident) return;
+    const requestId = ++activeRouteRequest;
     IC.setState({ view: 'map' }, 'view');
-    const routePath = getRoutePath(incident);
+    focusRouteLayer?.clearLayers();
+    map.flyTo([incident.lat, incident.lng], Math.max(map.getZoom(), 9), { animate: true, duration: 0.45 });
+    const routePath = await getIncidentRoutePath(incident);
+    if (requestId !== activeRouteRequest) return;
     drawFocusRoute(routePath, incident);
-    map.flyToBounds(L.latLngBounds(routePath).pad(0.55), {
-      animate: true,
-      duration: 0.75,
-      maxZoom: Math.max(map.getZoom(), 10),
-      paddingTopLeft: [240, 80],
-      paddingBottomRight: [70, 120],
-    });
+    frameFocusedRoute(routePath, incident);
     setTimeout(() => pulseIncidentMarker(id), 650);
   }
 
   function drawFocusRoute(routePath, incident) {
     if (!focusRouteLayer) return;
     focusRouteLayer.clearLayers();
-    L.polyline(routePath, {
-      color: '#ffffff',
-      weight: 10,
-      opacity: 0.92,
-      lineCap: 'round',
-      lineJoin: 'round',
-    }).addTo(focusRouteLayer);
-    L.polyline(routePath, {
-      color: '#824acb',
-      weight: 5,
-      opacity: 0.96,
-      lineCap: 'round',
-      lineJoin: 'round',
-    }).addTo(focusRouteLayer);
+    if (routePath.length > 1) {
+      L.polyline(routePath, {
+        color: '#ffffff',
+        weight: 10,
+        opacity: 0.92,
+        lineCap: 'round',
+        lineJoin: 'round',
+        interactive: false,
+        className: 'focus-route-halo',
+      }).addTo(focusRouteLayer);
+      L.polyline(routePath, {
+        color: '#824acb',
+        weight: 5,
+        opacity: 0.96,
+        lineCap: 'round',
+        lineJoin: 'round',
+        interactive: false,
+        className: 'focus-route-line',
+      }).addTo(focusRouteLayer);
+    }
     L.circleMarker([incident.lat, incident.lng], {
       radius: 13,
       color: '#ffffff',
@@ -183,16 +189,62 @@
     }).addTo(focusRouteLayer);
   }
 
-  function getRoutePath(incident) {
+  function frameFocusedRoute(routePath, incident) {
+    if (routePath.length > 1) {
+      map.flyToBounds(L.latLngBounds(routePath).pad(0.35), {
+        animate: true,
+        duration: 0.65,
+        maxZoom: Math.max(map.getZoom(), 12),
+        paddingTopLeft: [250, 92],
+        paddingBottomRight: [80, 120],
+      });
+      return;
+    }
+    map.flyTo([incident.lat, incident.lng], Math.max(map.getZoom(), 12), { animate: true, duration: 0.65 });
+  }
+
+  async function getIncidentRoutePath(incident) {
+    if (routeCache.has(incident.id)) return routeCache.get(incident.id);
+    for (const [start, end] of getRouteEndpointCandidates(incident)) {
+      const route = await fetchRoadRoute(start, end);
+      if (route?.length > 1) {
+        routeCache.set(incident.id, route);
+        return route;
+      }
+    }
+    const pointOnly = [[incident.lat, incident.lng]];
+    routeCache.set(incident.id, pointOnly);
+    return pointOnly;
+  }
+
+  async function fetchRoadRoute(start, end) {
+    const url = new URL(`https://router.project-osrm.org/route/v1/driving/${start[1]},${start[0]};${end[1]},${end[0]}`);
+    url.searchParams.set('overview', 'full');
+    url.searchParams.set('geometries', 'geojson');
+    url.searchParams.set('steps', 'false');
+    url.searchParams.set('radiuses', '4000;4000');
+    try {
+      const res = await fetch(url, { signal: AbortSignal.timeout(6500) });
+      if (!res.ok) return null;
+      const data = await res.json();
+      const route = data.routes?.[0];
+      if (!route || route.distance > 50000) return null;
+      return route.geometry.coordinates.map(([lng, lat]) => [lat, lng]);
+    } catch (_) {
+      return null;
+    }
+  }
+
+  function getRouteEndpointCandidates(incident) {
     const profiles = {
-      expressway: [[-0.26, -0.21], [-0.14, -0.12], [0, 0], [0.15, 0.11], [0.31, 0.24]],
-      federal: [[-0.23, 0.16], [-0.10, 0.08], [0, 0], [0.12, -0.08], [0.27, -0.19]],
-      state: [[-0.20, -0.05], [-0.08, 0.04], [0, 0], [0.10, 0.07], [0.22, 0.03]],
-      district: [[-0.15, 0.11], [-0.06, 0.03], [0, 0], [0.08, -0.04], [0.18, -0.08]],
+      expressway: [[0.055, 0.035], [0.045, -0.045], [0.065, 0.000]],
+      federal: [[0.045, -0.028], [0.000, 0.055], [0.050, 0.030]],
+      state: [[0.036, 0.020], [0.020, -0.038], [0.046, 0.000]],
+      district: [[0.026, -0.018], [0.000, 0.032], [0.030, 0.016]],
     };
-    return (profiles[incident.roadType] || profiles.expressway).map(([latOffset, lngOffset]) => [
-      incident.lat + latOffset,
-      incident.lng + lngOffset,
+    return (profiles[incident.roadType] || profiles.expressway).map(([latDelta, lngDelta]) => [
+      [incident.lat - latDelta, incident.lng - lngDelta],
+      [incident.lat + latDelta, incident.lng + lngDelta],
     ]);
   }
 
