@@ -454,6 +454,9 @@ iconify-icon {
 #alerts-panel {
   padding: 12px;
   overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
 }
 
 #alerts-panel,
@@ -475,7 +478,17 @@ iconify-icon {
 
 .warn-ico { font-size: 17px; color: #475569; }
 
-#alerts-list { display: flex; flex-direction: column; gap: 5px; }
+#alerts-list {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+  flex-direction: column;
+  gap: 5px;
+  overflow-x: hidden;
+  overflow-y: auto;
+  padding-right: 4px;
+  scrollbar-width: thin;
+}
 
 .alert-row {
   display: flex; align-items: center;
