@@ -224,13 +224,19 @@ iconify-icon {
 
 .t-sel {
   height: 36px;
-  padding: 0 34px 0 14px;
+  appearance: none;
+  -webkit-appearance: none;
+  padding: 0 36px 0 14px;
   border-radius: 8px;
   border: 1px solid rgba(160,188,216,.9);
   font-size: 12px;
   font-weight: 700;
   color: #1e293b;
-  background: rgba(232,244,255,.94);
+  background-color: rgba(232,244,255,.94);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23334155' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 14px center;
+  background-size: 14px 14px;
   box-shadow: 0 4px 14px rgba(15,23,42,.14);
   cursor: pointer;
 }
