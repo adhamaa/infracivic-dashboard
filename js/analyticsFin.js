@@ -30,10 +30,10 @@
     IC.charts.createChart('fin-aging-chart', {
       data: grouped,
       series: [
-        { type: 'bar', direction: 'vertical', xKey: 'bucket', yKey: 'submitted', yName: 'Submitted', stacked: true, fill: '#824acb', listeners: { nodeClick: bucketClick } },
-        { type: 'bar', direction: 'vertical', xKey: 'bucket', yKey: 'review', yName: 'Under Review', stacked: true, fill: '#1976d2', listeners: { nodeClick: bucketClick } },
-        { type: 'bar', direction: 'vertical', xKey: 'bucket', yKey: 'approved', yName: 'Approved', stacked: true, fill: '#2e8b45', listeners: { nodeClick: bucketClick } },
-        { type: 'bar', direction: 'vertical', xKey: 'bucket', yKey: 'rejected', yName: 'Rejected', stacked: true, fill: '#ef3b3b', listeners: { nodeClick: bucketClick } },
+        { type: 'bar', direction: 'vertical', xKey: 'bucket', yKey: 'submitted', yName: 'Submitted', stacked: true, fill: IC.charts.palette.slate, listeners: { nodeClick: bucketClick } },
+        { type: 'bar', direction: 'vertical', xKey: 'bucket', yKey: 'review', yName: 'Under Review', stacked: true, fill: IC.charts.palette.blue, listeners: { nodeClick: bucketClick } },
+        { type: 'bar', direction: 'vertical', xKey: 'bucket', yKey: 'approved', yName: 'Approved', stacked: true, fill: IC.charts.palette.green, listeners: { nodeClick: bucketClick } },
+        { type: 'bar', direction: 'vertical', xKey: 'bucket', yKey: 'rejected', yName: 'Rejected', stacked: true, fill: IC.charts.palette.red, listeners: { nodeClick: bucketClick } },
       ],
       axes: [
         { type: 'category', position: 'bottom', label: { color: '#64748b', fontSize: 10 } },
@@ -53,13 +53,13 @@
     IC.charts.createChart('fin-velocity-chart', {
       data: [totals],
       series: [
-        { type: 'bar', direction: 'horizontal', xKey: 'stage', yKey: 'submitted', yName: 'Submitted', stacked: true, fill: '#824acb' },
-        { type: 'bar', direction: 'horizontal', xKey: 'stage', yKey: 'approved', yName: 'Approved', stacked: true, fill: '#1976d2' },
-        { type: 'bar', direction: 'horizontal', xKey: 'stage', yKey: 'released', yName: 'Released', stacked: true, fill: '#2e8b45' },
+        { type: 'bar', direction: 'horizontal', xKey: 'stage', yKey: 'submitted', yName: 'Submitted', stacked: true, fill: IC.charts.palette.slate },
+        { type: 'bar', direction: 'horizontal', xKey: 'stage', yKey: 'approved', yName: 'Approved', stacked: true, fill: IC.charts.palette.blue },
+        { type: 'bar', direction: 'horizontal', xKey: 'stage', yKey: 'released', yName: 'Released', stacked: true, fill: IC.charts.palette.green },
       ],
       axes: [
         { type: 'category', position: 'left', label: { enabled: false } },
-        { type: 'number', position: 'bottom', label: { formatter: params => `RM ${params.value}M`, color: '#64748b', fontSize: 10 } },
+        { type: 'number', position: 'bottom', label: { enabled: false }, line: { enabled: false }, tick: { enabled: false } },
       ],
       legend: { position: 'bottom' },
     });
@@ -103,8 +103,8 @@
       data,
       series: [
         { type: 'bar', direction: 'horizontal', xKey: 'concession', yKey: 'allocated', yName: 'Allocated', fill: '#cbd5e1' },
-        { type: 'bar', direction: 'horizontal', xKey: 'concession', yKey: 'spent', yName: 'YTD Spent', fill: '#824acb' },
-        { type: 'bar', direction: 'horizontal', xKey: 'concession', yKey: 'projected', yName: 'Projected', fill: '#ff7a16' },
+        { type: 'bar', direction: 'horizontal', xKey: 'concession', yKey: 'spent', yName: 'YTD Spent', fill: IC.charts.palette.blue },
+        { type: 'bar', direction: 'horizontal', xKey: 'concession', yKey: 'projected', yName: 'Projected', fill: IC.charts.palette.amber },
       ],
       axes: [
         { type: 'category', position: 'left', label: { color: '#64748b', fontSize: 10 } },
@@ -129,9 +129,9 @@
     IC.charts.createChart('fin-cashflow-chart', {
       data: D.MONTHLY_RELEASES,
       series: [
-        { type: 'area', xKey: 'month', yKey: 'PLUS', yName: 'PLUS', stacked: true, fill: '#824acb', stroke: '#824acb' },
-        { type: 'area', xKey: 'month', yKey: 'LITRAK', yName: 'LITRAK', stacked: true, fill: '#1976d2', stroke: '#1976d2' },
-        { type: 'area', xKey: 'month', yKey: 'SPRINT', yName: 'SPRINT', stacked: true, fill: '#2e8b45', stroke: '#2e8b45' },
+        { type: 'line', xKey: 'month', yKey: 'PLUS', yName: 'PLUS', stroke: IC.charts.palette.blue, strokeWidth: 2.4, marker: { enabled: false } },
+        { type: 'line', xKey: 'month', yKey: 'LITRAK', yName: 'LITRAK', stroke: IC.charts.palette.cyan, strokeWidth: 2.4, marker: { enabled: false } },
+        { type: 'line', xKey: 'month', yKey: 'SPRINT', yName: 'SPRINT', stroke: IC.charts.palette.green, strokeWidth: 2.4, marker: { enabled: false } },
       ],
       axes: [
         { type: 'category', position: 'bottom', label: { enabled: false } },

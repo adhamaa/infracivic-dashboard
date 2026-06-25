@@ -35,14 +35,14 @@ const CONCESSIONAIRES = [
   { name: 'Concessionaire 6', concession: 'SPRINT', value: 55  },
 ];
 
-const CONC_COLORS = ['#2196F3','#43A047','#66BB6A','#FF9800','#AB47BC','#EF5350'];
+const CONC_COLORS = ['#2563eb','#16a34a','#0891b2','#d97706','#6d5dfc','#dc2626'];
 
 const SEV_COLORS = {
-  critical: '#e53935',
-  high:     '#fb8c00',
-  medium:   '#f9a825',
-  low:      '#1e88e5',
-  completed:'#43a047',
+  critical: '#dc2626',
+  high:     '#d97706',
+  medium:   '#ca8a04',
+  low:      '#2563eb',
+  completed:'#16a34a',
 };
 
 const SEVERITY_LABELS = {

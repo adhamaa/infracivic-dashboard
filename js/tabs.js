@@ -12,6 +12,11 @@
   };
 
   function initTabs() {
+    const requestedTab = new URLSearchParams(window.location.search).get('tab');
+    if (['commandCentre', 'operations', 'financial'].includes(requestedTab)) {
+      IC.setState({ tab: requestedTab }, 'tab');
+      if (requestedTab === 'financial' && IC.state.filters.period === '90d') IC.setFilters({ period: 'ytd' });
+    }
     document.querySelectorAll('[data-tab]').forEach(button => {
       button.addEventListener('click', () => activateTab(button.dataset.tab));
     });

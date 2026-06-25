@@ -25,62 +25,67 @@
   }
 
   function renderSlaHeatmap() {
+    const container = document.getElementById('op-sla-chart');
+    if (!container) return;
+    IC.charts.destroyChart('op-sla-chart');
     const data = concessionItems(D.SLA_BY_CONCESSION_SEVERITY);
+    const severities = [
+      { key: 'critical', label: 'Critical', color: D.SEV_COLORS.critical },
+      { key: 'high', label: 'High', color: D.SEV_COLORS.high },
+      { key: 'medium', label: 'Medium', color: D.SEV_COLORS.medium },
+      { key: 'low', label: 'Low', color: D.SEV_COLORS.low },
+    ];
     const rows = [...data.reduce((map, item) => {
       const row = map.get(item.concession) || { concession: item.concession };
       row[item.severity.toLowerCase()] = item.value;
       row[`${item.severity.toLowerCase()}Open`] = item.open;
       map.set(item.concession, row);
       return map;
-    }, new Map()).values()];
-    const series = [
-      { key: 'critical', name: 'Critical', fill: D.SEV_COLORS.critical },
-      { key: 'high', name: 'High', fill: D.SEV_COLORS.high },
-      { key: 'medium', name: 'Medium', fill: D.SEV_COLORS.medium },
-      { key: 'low', name: 'Low', fill: D.SEV_COLORS.low },
-    ].map(item => ({
-      type: 'bar',
-      direction: 'vertical',
-      xKey: 'concession',
-      yKey: item.key,
-      yName: item.name,
-      fill: item.fill,
-      label: {
-        enabled: true,
-        formatter: params => `${params.value}%`,
-        color: '#334155',
-        fontSize: 10,
-      },
-      listeners: {
-        nodeClick: event => {
-          IC.showCommandCentreList({ concession: event.datum.concession, status: item.key });
-        },
-      },
-      tooltip: {
-        renderer: params => ({
-          content: `${params.datum.concession} ${item.name}: ${params.datum[item.key]}% SLA (${params.datum[`${item.key}Open`]} open)`,
-        }),
-      },
+    }, new Map()).values()].map(row => ({
+      ...row,
+      average: average(severities.map(item => row[item.key] || 0)),
     }));
-    IC.charts.createChart('op-sla-chart', {
-      data: rows,
-      series,
-      axes: [
-        { type: 'category', position: 'bottom', label: { color: '#475569', fontSize: 11 } },
-        { type: 'number', position: 'left', min: 0, max: 100, label: { formatter: params => `${params.value}%`, color: '#64748b', fontSize: 10 } },
-      ],
-      legend: { position: 'bottom' },
+
+    container.innerHTML = `
+      <div class="sla-health">
+        ${rows.map(row => `
+          <div class="sla-health-row">
+            <div class="sla-health-top">
+              <strong>${row.concession}</strong>
+              <span>${row.average.toFixed(0)}% overall</span>
+            </div>
+            <div class="sla-meter-grid">
+              ${severities.map(item => `
+                <button class="sla-meter" type="button" data-concession="${row.concession}" data-status="${item.key}" title="${row.concession} ${item.label}: ${row[item.key] || 0}% SLA, ${row[`${item.key}Open`] || 0} open" style="--sla-color:${item.color}; --sla-value:${row[item.key] || 0}%">
+                  <span>${severityInitial(item.label)}</span>
+                  <i><b></b></i>
+                  <strong>${row[item.key] || 0}%</strong>
+                </button>
+              `).join('')}
+            </div>
+          </div>
+        `).join('')}
+      </div>
+    `;
+    container.querySelectorAll('[data-concession][data-status]').forEach(button => {
+      button.addEventListener('click', () => {
+        IC.showCommandCentreList({ concession: button.dataset.concession, status: button.dataset.status });
+      });
     });
+  }
+
+  function severityInitial(label) {
+    return label.charAt(0).toUpperCase();
   }
 
   function renderMttrTrend() {
     IC.charts.createChart('op-mttr-chart', {
       data: D.MTTR_TREND,
       series: [
-        { type: 'line', xKey: 'week', yKey: 'critical', yName: 'Critical', stroke: D.SEV_COLORS.critical, marker: { enabled: false } },
-        { type: 'line', xKey: 'week', yKey: 'high', yName: 'High', stroke: D.SEV_COLORS.high, marker: { enabled: false } },
-        { type: 'line', xKey: 'week', yKey: 'medium', yName: 'Medium', stroke: D.SEV_COLORS.medium, marker: { enabled: false } },
-        { type: 'line', xKey: 'week', yKey: 'low', yName: 'Low', stroke: D.SEV_COLORS.low, marker: { enabled: false } },
+        { type: 'line', xKey: 'week', yKey: 'critical', yName: 'Critical', stroke: D.SEV_COLORS.critical, marker: { enabled: true, size: 4 } },
+        { type: 'line', xKey: 'week', yKey: 'high', yName: 'High', stroke: D.SEV_COLORS.high, marker: { enabled: true, size: 4 } },
+        { type: 'line', xKey: 'week', yKey: 'medium', yName: 'Medium', stroke: D.SEV_COLORS.medium, marker: { enabled: true, size: 4 } },
+        { type: 'line', xKey: 'week', yKey: 'low', yName: 'Low', stroke: D.SEV_COLORS.low, marker: { enabled: true, size: 4 } },
       ],
       axes: [
         { type: 'category', position: 'bottom', label: { color: '#64748b', fontSize: 10 } },
@@ -119,15 +124,45 @@
   function renderDefectMix() {
     const totals = new Map();
     concessionItems(D.DEFECT_MIX).forEach(item => totals.set(item.category, (totals.get(item.category) || 0) + item.count));
-    const data = [...totals.entries()].map(([category, count]) => ({ category, count }));
+    const data = [...totals.entries()]
+      .map(([category, count]) => ({ category, count }))
+      .sort((a, b) => b.count - a.count);
+    const total = data.reduce((sum, item) => sum + item.count, 0);
     IC.charts.createChart('op-defect-mix-chart', {
+      type: 'donut',
       data,
       series: [{
-        type: 'pie',
+        type: 'donut',
+        data,
         angleKey: 'count',
+        angleName: 'Defects',
         calloutLabelKey: 'category',
         sectorLabelKey: 'count',
+        legendItemKey: 'category',
         innerRadiusRatio: 0.58,
+        outerRadiusRatio: 0.76,
+        sectorSpacing: 2,
+        cornerRadius: 3,
+        fills: [IC.charts.palette.blue, IC.charts.palette.cyan, IC.charts.palette.green, IC.charts.palette.amber, IC.charts.palette.violet],
+        strokes: ['#ffffff'],
+        calloutLabel: {
+          enabled: true,
+          minAngle: 0,
+          offset: 4,
+          fontSize: 10,
+          formatter: params => `${shortDefectLabel(params.datum.category)} ${params.datum.count.toLocaleString('en-MY')}`,
+        },
+        sectorLabel: {
+          enabled: false,
+        },
+        innerCircle: { fill: '#ffffff', fillOpacity: 0.92 },
+        innerLabels: [
+          { text: total.toLocaleString('en-MY'), fontSize: 24, fontWeight: 900, color: '#0f172a', spacing: 2 },
+          { text: 'DEFECTS', fontSize: 10, fontWeight: 800, color: '#64748b' },
+        ],
+        tooltip: {
+          renderer: params => ({ content: `${params.datum.category}: ${params.datum.count.toLocaleString('en-MY')} defects` }),
+        },
         listeners: {
           nodeClick: event => {
             IC.showCommandCentreList({ status: 'all' });
@@ -135,7 +170,7 @@
           },
         },
       }],
-      legend: { position: 'right' },
+      legend: { enabled: false },
     });
   }
 
@@ -166,6 +201,16 @@
     document.querySelectorAll('#op-top-contractors [data-contractor]').forEach(row => {
       row.addEventListener('click', () => IC.openContractorDetail?.(row.dataset.contractor));
     });
+  }
+
+  function shortDefectLabel(category) {
+    return {
+      Pavement: 'Pave',
+      Drainage: 'Drain',
+      Signage: 'Sign',
+      Guardrail: 'Rail',
+      'Bridge Joint': 'Bridge',
+    }[category] || category;
   }
 
   function kpiCard(label, value, valueClass, icon, iconClass) {
