@@ -12,10 +12,12 @@
 
   const state = {
     route: 'dashboard',
+    tab: 'commandCentre',
     view: 'map',
     filters: {
       concession: 'all',
       status: 'all',
+      period: '90d',
       dateRange: 'all',
       roadTypes: [...D.ROAD_TYPES],
       minCount: 0,

@@ -186,6 +186,120 @@ const TOPO_URLS = [
   'https://raw.githubusercontent.com/dosm-malaysia/kawasanku-front/main/public/geo/administrative/state.geojson',
 ];
 
+const SLA_BY_CONCESSION_SEVERITY = [
+  { concession: 'PLUS', severity: 'Critical', value: 84, open: 18 },
+  { concession: 'PLUS', severity: 'High', value: 89, open: 42 },
+  { concession: 'PLUS', severity: 'Medium', value: 93, open: 76 },
+  { concession: 'PLUS', severity: 'Low', value: 96, open: 112 },
+  { concession: 'LITRAK', severity: 'Critical', value: 78, open: 11 },
+  { concession: 'LITRAK', severity: 'High', value: 86, open: 28 },
+  { concession: 'LITRAK', severity: 'Medium', value: 91, open: 55 },
+  { concession: 'LITRAK', severity: 'Low', value: 94, open: 81 },
+  { concession: 'SPRINT', severity: 'Critical', value: 72, open: 9 },
+  { concession: 'SPRINT', severity: 'High', value: 81, open: 23 },
+  { concession: 'SPRINT', severity: 'Medium', value: 88, open: 37 },
+  { concession: 'SPRINT', severity: 'Low', value: 92, open: 64 },
+];
+
+const MTTR_TREND = [
+  { week: 'W-11', critical: 26.4, high: 19.6, medium: 11.4, low: 5.2 },
+  { week: 'W-10', critical: 25.8, high: 19.2, medium: 11.1, low: 5.1 },
+  { week: 'W-09', critical: 24.9, high: 18.7, medium: 10.8, low: 5.0 },
+  { week: 'W-08', critical: 25.2, high: 18.1, medium: 10.5, low: 4.8 },
+  { week: 'W-07', critical: 23.8, high: 17.9, medium: 10.3, low: 4.7 },
+  { week: 'W-06', critical: 23.1, high: 17.4, medium: 9.9, low: 4.6 },
+  { week: 'W-05', critical: 22.7, high: 16.8, medium: 9.8, low: 4.5 },
+  { week: 'W-04', critical: 22.9, high: 16.4, medium: 9.5, low: 4.3 },
+  { week: 'W-03', critical: 21.8, high: 15.9, medium: 9.2, low: 4.2 },
+  { week: 'W-02', critical: 21.2, high: 15.4, medium: 9.0, low: 4.1 },
+  { week: 'W-01', critical: 20.6, high: 15.1, medium: 8.7, low: 4.0 },
+  { week: 'Current', critical: 19.8, high: 14.7, medium: 8.4, low: 3.8 },
+];
+
+const CONTRACTORS = [
+  { name: 'Perdana Roadcare', concession: 'PLUS', jobs: 148, avgResponse: '3.8h', sla: 96, rework: 2.4, trend: '+4%' },
+  { name: 'Lintasan Maintenance', concession: 'LITRAK', jobs: 94, avgResponse: '4.2h', sla: 92, rework: 3.1, trend: '+2%' },
+  { name: 'Sprint Field Services', concession: 'SPRINT', jobs: 82, avgResponse: '4.8h', sla: 88, rework: 4.6, trend: '-1%' },
+  { name: 'Infra Selatan', concession: 'PLUS', jobs: 76, avgResponse: '5.1h', sla: 86, rework: 5.0, trend: '+1%' },
+  { name: 'Metro Pavement Crew', concession: 'LITRAK', jobs: 69, avgResponse: '5.4h', sla: 84, rework: 5.8, trend: '-3%' },
+  { name: 'Jajaran Bridge Unit', concession: 'PLUS', jobs: 52, avgResponse: '6.1h', sla: 82, rework: 6.2, trend: '0%' },
+  { name: 'Urban Drainage Ops', concession: 'SPRINT', jobs: 47, avgResponse: '6.6h', sla: 79, rework: 7.4, trend: '-2%' },
+  { name: 'Pantai Timur Response', concession: 'PLUS', jobs: 44, avgResponse: '7.2h', sla: 76, rework: 8.1, trend: '-4%' },
+];
+
+const DEFECT_MIX = [
+  { category: 'Pavement', concession: 'PLUS', count: 148 },
+  { category: 'Drainage', concession: 'PLUS', count: 93 },
+  { category: 'Signage', concession: 'PLUS', count: 54 },
+  { category: 'Guardrail', concession: 'PLUS', count: 46 },
+  { category: 'Bridge Joint', concession: 'PLUS', count: 31 },
+  { category: 'Pavement', concession: 'LITRAK', count: 92 },
+  { category: 'Drainage', concession: 'LITRAK', count: 71 },
+  { category: 'Signage', concession: 'LITRAK', count: 48 },
+  { category: 'Guardrail', concession: 'LITRAK', count: 33 },
+  { category: 'Bridge Joint', concession: 'LITRAK', count: 19 },
+  { category: 'Pavement', concession: 'SPRINT', count: 73 },
+  { category: 'Drainage', concession: 'SPRINT', count: 62 },
+  { category: 'Signage', concession: 'SPRINT', count: 41 },
+  { category: 'Guardrail', concession: 'SPRINT', count: 29 },
+  { category: 'Bridge Joint', concession: 'SPRINT', count: 14 },
+];
+
+const CLAIMS_AGING = [
+  { bucket: '0-7 days', concession: 'PLUS', submitted: 34, review: 24, approved: 18, rejected: 4 },
+  { bucket: '8-14 days', concession: 'PLUS', submitted: 21, review: 26, approved: 16, rejected: 5 },
+  { bucket: '15-30 days', concession: 'PLUS', submitted: 12, review: 20, approved: 11, rejected: 6 },
+  { bucket: '30+ days', concession: 'PLUS', submitted: 7, review: 17, approved: 8, rejected: 9 },
+  { bucket: '0-7 days', concession: 'LITRAK', submitted: 24, review: 18, approved: 13, rejected: 3 },
+  { bucket: '8-14 days', concession: 'LITRAK', submitted: 18, review: 19, approved: 10, rejected: 4 },
+  { bucket: '15-30 days', concession: 'LITRAK', submitted: 9, review: 15, approved: 8, rejected: 5 },
+  { bucket: '30+ days', concession: 'LITRAK', submitted: 5, review: 12, approved: 5, rejected: 7 },
+  { bucket: '0-7 days', concession: 'SPRINT', submitted: 19, review: 15, approved: 11, rejected: 2 },
+  { bucket: '8-14 days', concession: 'SPRINT', submitted: 15, review: 16, approved: 9, rejected: 3 },
+  { bucket: '15-30 days', concession: 'SPRINT', submitted: 8, review: 12, approved: 7, rejected: 4 },
+  { bucket: '30+ days', concession: 'SPRINT', submitted: 4, review: 10, approved: 4, rejected: 6 },
+];
+
+const PAYMENT_VELOCITY = [
+  { concession: 'PLUS', submitted: 1180, approved: 982, released: 844 },
+  { concession: 'LITRAK', submitted: 724, approved: 604, released: 498 },
+  { concession: 'SPRINT', submitted: 486, approved: 392, released: 318 },
+];
+
+const OPEN_CLAIMS = [
+  { id: 'CLM-2026-8841', concession: 'PLUS', value: 96.4, daysPending: 42, approver: 'Finance Director', status: 'Review' },
+  { id: 'CLM-2026-8794', concession: 'LITRAK', value: 72.8, daysPending: 36, approver: 'JKR Verifier', status: 'Submitted' },
+  { id: 'CLM-2026-8762', concession: 'PLUS', value: 68.1, daysPending: 31, approver: 'Technical Audit', status: 'Review' },
+  { id: 'CLM-2026-8728', concession: 'SPRINT', value: 54.9, daysPending: 29, approver: 'Finance Director', status: 'Approved' },
+  { id: 'CLM-2026-8699', concession: 'LITRAK', value: 47.3, daysPending: 25, approver: 'Concession Lead', status: 'Review' },
+  { id: 'CLM-2026-8660', concession: 'PLUS', value: 42.6, daysPending: 21, approver: 'JKR Verifier', status: 'Submitted' },
+  { id: 'CLM-2026-8615', concession: 'SPRINT', value: 38.5, daysPending: 19, approver: 'Technical Audit', status: 'Review' },
+  { id: 'CLM-2026-8577', concession: 'PLUS', value: 33.8, daysPending: 17, approver: 'Concession Lead', status: 'Approved' },
+  { id: 'CLM-2026-8521', concession: 'LITRAK', value: 29.4, daysPending: 14, approver: 'JKR Verifier', status: 'Submitted' },
+  { id: 'CLM-2026-8488', concession: 'SPRINT', value: 24.2, daysPending: 12, approver: 'Finance Director', status: 'Review' },
+];
+
+const BUDGET_BURN = [
+  { concession: 'PLUS', allocated: 1450, spent: 918, projected: 1320 },
+  { concession: 'LITRAK', allocated: 920, spent: 642, projected: 884 },
+  { concession: 'SPRINT', allocated: 680, spent: 418, projected: 622 },
+];
+
+const MONTHLY_RELEASES = [
+  { month: 'Jan', PLUS: 92, LITRAK: 48, SPRINT: 31 },
+  { month: 'Feb', PLUS: 104, LITRAK: 51, SPRINT: 34 },
+  { month: 'Mar', PLUS: 118, LITRAK: 57, SPRINT: 39 },
+  { month: 'Apr', PLUS: 126, LITRAK: 62, SPRINT: 44 },
+  { month: 'May', PLUS: 133, LITRAK: 69, SPRINT: 48 },
+  { month: 'Jun', PLUS: 142, LITRAK: 73, SPRINT: 52 },
+  { month: 'Jul', PLUS: 151, LITRAK: 78, SPRINT: 56 },
+  { month: 'Aug', PLUS: 148, LITRAK: 82, SPRINT: 59 },
+  { month: 'Sep', PLUS: 156, LITRAK: 86, SPRINT: 61 },
+  { month: 'Oct', PLUS: 162, LITRAK: 90, SPRINT: 64 },
+  { month: 'Nov', PLUS: 171, LITRAK: 96, SPRINT: 68 },
+  { month: 'Dec', PLUS: 181, LITRAK: 102, SPRINT: 72 },
+];
+
 window.IC_DATA = {
   ASSIGNEES,
   CONCESSIONS,
@@ -202,4 +316,13 @@ window.IC_DATA = {
   PAYMENTS,
   STATE_DATA,
   TOPO_URLS,
+  SLA_BY_CONCESSION_SEVERITY,
+  MTTR_TREND,
+  CONTRACTORS,
+  DEFECT_MIX,
+  CLAIMS_AGING,
+  PAYMENT_VELOCITY,
+  OPEN_CLAIMS,
+  BUDGET_BURN,
+  MONTHLY_RELEASES,
 };

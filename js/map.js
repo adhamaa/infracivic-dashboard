@@ -302,6 +302,7 @@
   }
 
   IC.initMap = initMap;
+  IC.invalidateMap = () => map?.invalidateSize();
   IC.pulseIncidentMarker = pulseIncidentMarker;
   IC.focusIncidentOnMap = focusIncidentOnMap;
   IC.clearFocusedRoute = clearFocusedRoute;

@@ -10,6 +10,9 @@
     document.getElementById('concession-filter')?.addEventListener('change', event => {
       IC.setFilters({ concession: event.target.value });
     });
+    document.getElementById('period-filter')?.addEventListener('change', event => {
+      IC.setFilters({ period: event.target.value });
+    });
     document.getElementById('status-filter')?.addEventListener('change', event => {
       IC.setFilters({ status: event.target.value });
     });
@@ -97,8 +100,10 @@
   function syncFilterControls() {
     const { filters } = IC.state;
     const concession = document.getElementById('concession-filter');
+    const period = document.getElementById('period-filter');
     const status = document.getElementById('status-filter');
     if (concession) concession.value = filters.concession;
+    if (period) period.value = filters.period;
     if (status) status.value = filters.status;
     document.querySelectorAll('[data-road-type]').forEach(input => {
       input.checked = filters.roadTypes.includes(input.value);

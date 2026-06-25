@@ -4,9 +4,12 @@ document.addEventListener('DOMContentLoaded', async () => {
   IC.initModal();
   IC.initToast();
   IC.initFilters();
+  IC.initTabs();
   IC.initListView();
   IC.initQuickActions();
   IC.initRoutes();
   IC.initRender();
+  IC.initOperationsAnalytics();
+  IC.initFinancialAnalytics();
   await IC.initMap();
 });

@@ -10,9 +10,10 @@
     renderIncidentsSummary();
     renderConcessionairesChart();
     IC.subscribe((_, reason) => {
-      if (['filters', 'incident', 'incident:add'].includes(reason)) {
+      if (['filters', 'incident', 'incident:add', 'tab'].includes(reason)) {
         renderAlerts();
         renderIncidentsSummary();
+        renderSparklines();
         renderConcessionairesChart();
       }
     });
@@ -61,41 +62,72 @@
   }
 
   function renderSparklines() {
-    const mkSpark = (id, data, color) => {
-      const el = document.getElementById(id);
-      if (!el) return;
-      const values = data.map(d => d.y);
-      const min = Math.min(...values);
-      const max = Math.max(...values);
-      const span = max - min || 1;
-      const points = values.map((value, index) => {
-        const x = (index / (values.length - 1)) * 100;
-        const y = 28 - ((value - min) / span) * 22 - 3;
-        return `${x.toFixed(2)},${y.toFixed(2)}`;
-      }).join(' ');
-      el.innerHTML = `<svg class="spark-svg" viewBox="0 0 100 32" preserveAspectRatio="none" aria-hidden="true"><polyline points="${points}" fill="none" stroke="${color}" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" /></svg>`;
-    };
+    if (IC.state.tab !== 'commandCentre') return;
+    const mkSpark = (id, data, color) => IC.charts.createChart(id, {
+      data,
+      padding: { top: 3, right: 2, bottom: 2, left: 2 },
+      series: [{
+        type: 'line',
+        xKey: 'x',
+        yKey: 'y',
+        stroke: color,
+        strokeWidth: 2.5,
+        marker: { enabled: false },
+      }],
+      axes: [
+        { type: 'number', position: 'bottom', label: { enabled: false }, line: { enabled: false }, tick: { enabled: false } },
+        { type: 'number', position: 'left', label: { enabled: false }, line: { enabled: false }, tick: { enabled: false } },
+      ],
+      legend: { enabled: false },
+    });
     mkSpark('spark-approval', D.SPARKLINES.approval, '#3b82f6');
     mkSpark('spark-success', D.SPARKLINES.success, '#22c55e');
     mkSpark('spark-payment', D.SPARKLINES.payment, '#22c55e');
   }
 
   function renderConcessionairesChart() {
+    if (IC.state.tab !== 'commandCentre') return;
     const el = document.getElementById('chart-conc');
     if (!el) return;
     const selected = IC.state.filters.concession;
-    const maxValue = Math.max(...D.CONCESSIONAIRES.map(item => item.value));
-    el.innerHTML = D.CONCESSIONAIRES.map((item, index) => {
-      const active = selected !== 'all' && item.concession === selected;
-      const dim = selected !== 'all' && item.concession !== selected;
-      return `
-        <div class="conc-row ${active ? 'conc-active' : ''} ${dim ? 'conc-dim' : ''}" data-concession="${item.concession}">
-          <span class="conc-name">${item.name}</span>
-          <div class="conc-track"><span class="conc-bar" style="width:${(item.value / maxValue * 100).toFixed(1)}%;background:${D.CONC_COLORS[index % D.CONC_COLORS.length]}"></span></div>
-          <span class="conc-value">RM&nbsp;${item.value}M</span>
-        </div>
-      `;
-    }).join('');
+    const data = D.CONCESSIONAIRES.map((item, index) => ({
+      ...item,
+      label: `${item.name}`,
+      color: D.CONC_COLORS[index % D.CONC_COLORS.length],
+      active: selected !== 'all' && item.concession === selected,
+      dim: selected !== 'all' && item.concession !== selected,
+    }));
+    IC.charts.createChart('chart-conc', {
+      data,
+      padding: { top: 8, right: 18, bottom: 6, left: 8 },
+      series: [{
+        type: 'bar',
+        direction: 'horizontal',
+        xKey: 'label',
+        yKey: 'value',
+        yName: 'Claims Value',
+        itemStyler: params => ({
+          fill: params.datum.color,
+          fillOpacity: params.datum.dim ? 0.35 : 1,
+          stroke: params.datum.active ? '#3f1f76' : params.datum.color,
+          strokeWidth: params.datum.active ? 2 : 0,
+        }),
+        label: {
+          enabled: true,
+          formatter: params => `RM ${params.value}M`,
+          color: '#334155',
+          fontSize: 10,
+        },
+        tooltip: {
+          renderer: params => ({ content: `${params.datum.name}: RM ${params.datum.value}M` }),
+        },
+      }],
+      axes: [
+        { type: 'category', position: 'left', label: { color: '#475569', fontSize: 10 } },
+        { type: 'number', position: 'bottom', label: { enabled: false }, line: { enabled: false }, tick: { enabled: false } },
+      ],
+      legend: { enabled: false },
+    });
   }
 
   IC.initRender = initRender;

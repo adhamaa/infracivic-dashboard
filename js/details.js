@@ -18,6 +18,58 @@
     });
   }
 
+  function openContractorDetail(name) {
+    const contractor = D.CONTRACTORS.find(item => item.name === name);
+    if (!contractor) return;
+    IC.openModal({
+      title: contractor.name,
+      body: `
+        <div class="detail-grid">
+          <div>
+            <span class="sev-pill ${contractor.sla >= 90 ? 'completed' : contractor.sla >= 82 ? 'medium' : 'critical'}">${contractor.sla}% SLA</span>
+            <h3>${contractor.concession} maintenance contractor</h3>
+            <p class="detail-meta">${contractor.jobs} jobs completed · ${contractor.avgResponse} average response · ${contractor.rework.toFixed(1)}% rework</p>
+          </div>
+          <div class="detail-owner">
+            <span>Trend</span>
+            <strong>${contractor.trend}</strong>
+          </div>
+        </div>
+        <div class="timeline">
+          <div class="tl-item"><span>SLA</span><p>${contractor.sla}% of assigned work closed within the target window.</p></div>
+          <div class="tl-item"><span>Response</span><p>Average first response time is ${contractor.avgResponse} for the current period.</p></div>
+          <div class="tl-item"><span>Quality</span><p>Rework rate is ${contractor.rework.toFixed(1)}%, tracked from field verification outcomes.</p></div>
+        </div>
+      `,
+    });
+  }
+
+  function openClaimDetail(id) {
+    const claim = D.OPEN_CLAIMS.find(item => item.id === id);
+    if (!claim) return;
+    IC.openModal({
+      title: claim.id,
+      body: `
+        <div class="detail-grid">
+          <div>
+            <span class="sev-pill ${claim.daysPending > 30 ? 'critical' : claim.daysPending > 20 ? 'medium' : 'completed'}">${claim.daysPending} days pending</span>
+            <h3>RM ${claim.value.toFixed(1)}M open claim</h3>
+            <p class="detail-meta">${claim.concession} · ${claim.status} · Current approver: ${claim.approver}</p>
+          </div>
+          <div class="detail-owner">
+            <span>Approver</span>
+            <strong>${claim.approver}</strong>
+          </div>
+        </div>
+        <div class="timeline">
+          <div class="tl-item"><span>Submitted</span><p>Claim entered the approval queue with site evidence attached.</p></div>
+          <div class="tl-item"><span>${claim.status}</span><p>Current stage owned by ${claim.approver}.</p></div>
+          <div class="tl-item"><span>Risk</span><p>${claim.daysPending > 30 ? 'Aging threshold exceeded; finance follow-up recommended.' : 'Within active review threshold.'}</p></div>
+        </div>
+      `,
+    });
+  }
+
   function renderDetailBody(incident, visual, assignMode) {
     return `
       <div class="detail-grid">
@@ -91,4 +143,6 @@
   }
 
   IC.openIncidentDetail = openIncidentDetail;
+  IC.openContractorDetail = openContractorDetail;
+  IC.openClaimDetail = openClaimDetail;
 })();

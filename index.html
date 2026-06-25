@@ -62,6 +62,26 @@
 
   <!-- ─── MAIN CONTENT ──────────────────────────────────────── -->
   <main id="main">
+    <div id="dashboard-tabs" class="dashboard-tabs" role="tablist" aria-label="Dashboard views">
+      <div class="tab-buttons">
+        <button class="dash-tab active" type="button" role="tab" aria-selected="true" data-tab="commandCentre">Command Centre</button>
+        <button class="dash-tab" type="button" role="tab" aria-selected="false" data-tab="operations">Operations</button>
+        <button class="dash-tab" type="button" role="tab" aria-selected="false" data-tab="financial">Financial</button>
+      </div>
+      <div class="tab-filters" aria-label="Dashboard filters">
+        <select class="t-sel" id="concession-filter" aria-label="Filter by concession">
+          <option value="all">All Concessions</option><option value="PLUS">PLUS</option>
+          <option value="LITRAK">LITRAK</option><option value="SPRINT">SPRINT</option>
+        </select>
+        <select class="t-sel" id="period-filter" aria-label="Filter by period">
+          <option value="7d">Last 7 days</option><option value="30d">Last 30 days</option>
+          <option value="90d">Last 90 days</option><option value="mtd">MTD</option>
+          <option value="qtd">QTD</option><option value="ytd">YTD</option>
+        </select>
+      </div>
+    </div>
+
+    <div id="tab-command-centre" class="dashboard-tab active" data-tab-panel="commandCentre">
     <section id="map-card">
       <div id="main-header">
         <h1>NATIONAL COMMAND CENTRE (REAL-TIME DASHBOARD)</h1>
@@ -77,10 +97,6 @@
             </div>
           </div>
           <div class="tb-right">
-            <select class="t-sel" id="concession-filter" aria-label="Filter by concession">
-              <option value="all">All Concessions</option><option value="PLUS">PLUS</option>
-              <option value="LITRAK">LITRAK</option><option value="SPRINT">SPRINT</option>
-            </select>
             <select class="t-sel" id="status-filter" aria-label="Filter by status">
               <option value="all">All Status</option><option value="critical">Critical</option>
               <option value="high">High</option><option value="medium">Medium</option><option value="low">Low</option>
@@ -151,10 +167,65 @@
         </div>
       </div>
     </div>
+    </div>
+
+    <div id="tab-operations" class="dashboard-tab" data-tab-panel="operations" hidden>
+      <section class="analytics-shell">
+        <div class="analytics-header rp-grad">
+          <h1>OPERATIONS ANALYTICS (<span data-period-label>LAST 90 DAYS</span>)</h1>
+        </div>
+        <div class="analytics-grid">
+          <article class="analytics-card wide">
+            <div class="analytics-card-head"><span>SLA COMPLIANCE</span><strong>Mock SLA by concession and severity</strong></div>
+            <div id="op-sla-chart" class="ag-chart"></div>
+          </article>
+          <article class="analytics-card wide">
+            <div class="analytics-card-head"><span>MEAN TIME TO RESOLVE</span><strong>Hours by severity</strong></div>
+            <div id="op-mttr-chart" class="ag-chart"></div>
+          </article>
+          <article class="analytics-card">
+            <div class="analytics-card-head"><span>CONTRACTOR SCORECARD</span><strong>SLA, response and rework</strong></div>
+            <div id="op-contractor-table" class="analytics-table-wrap"></div>
+          </article>
+          <article class="analytics-card">
+            <div class="analytics-card-head"><span>DEFECT MIX</span><strong>Share of logged defects</strong></div>
+            <div id="op-defect-mix-chart" class="ag-chart"></div>
+          </article>
+        </div>
+      </section>
+    </div>
+
+    <div id="tab-financial" class="dashboard-tab" data-tab-panel="financial" hidden>
+      <section class="analytics-shell">
+        <div class="analytics-header rp-purple">
+          <h1>FINANCIAL &amp; COMPLIANCE (<span data-period-label>YTD</span>)</h1>
+        </div>
+        <div class="analytics-grid">
+          <article class="analytics-card wide">
+            <div class="analytics-card-head"><span>CLAIMS AGING</span><strong>Pipeline by age and status</strong></div>
+            <div id="fin-aging-chart" class="ag-chart"></div>
+          </article>
+          <article class="analytics-card wide">
+            <div class="analytics-card-head"><span>PAYMENT VELOCITY</span><strong>Submitted to released value</strong></div>
+            <div id="fin-velocity-chart" class="ag-chart compact"></div>
+            <div id="fin-velocity-labels" class="velocity-labels"></div>
+          </article>
+          <article class="analytics-card">
+            <div class="analytics-card-head"><span>TOP 10 OPEN CLAIMS</span><strong>Largest pending values</strong></div>
+            <div id="fin-open-claims" class="analytics-table-wrap"></div>
+          </article>
+          <article class="analytics-card">
+            <div class="analytics-card-head"><span>BUDGET BURN VS PLAN</span><strong>YTD spend against allocation</strong></div>
+            <div id="fin-budget-chart" class="ag-chart"></div>
+          </article>
+        </div>
+      </section>
+    </div>
   </main>
 
   <!-- ─── RIGHT PANEL ───────────────────────────────────────── -->
   <aside id="right-panel">
+    <div id="rp-command-centre" class="rp-tab active" data-rp-panel="commandCentre">
 
     <!-- Overview -->
     <section class="rp-sec">
@@ -230,13 +301,47 @@
       <div id="chart-conc"></div>
     </section>
 
+    </div>
+
+    <div id="rp-operations" class="rp-tab" data-rp-panel="operations" hidden>
+      <section class="rp-sec">
+        <div class="rp-hdr rp-grad">SLA THIS PERIOD</div>
+        <div id="op-sla-kpis" class="kpi-trio"></div>
+      </section>
+      <section class="rp-sec">
+        <div class="rp-hdr rp-teal">RESPONSE PERFORMANCE</div>
+        <div id="op-response-kpis" class="kpi-duo"></div>
+      </section>
+      <section class="rp-sec">
+        <div class="rp-hdr rp-orange">TOP CONTRACTORS</div>
+        <div id="op-top-contractors" class="mini-list"></div>
+      </section>
+    </div>
+
+    <div id="rp-financial" class="rp-tab" data-rp-panel="financial" hidden>
+      <section class="rp-sec">
+        <div class="rp-hdr rp-purple">FINANCIAL HEADLINE</div>
+        <div id="fin-headline-kpis" class="kpi-trio"></div>
+      </section>
+      <section class="rp-sec">
+        <div class="rp-hdr rp-teal">CASH FLOW THIS PERIOD</div>
+        <div id="fin-cashflow-chart" class="ag-chart mini"></div>
+      </section>
+      <section class="rp-sec">
+        <div class="rp-hdr rp-orange">BUDGET STATUS</div>
+        <div id="fin-budget-status" class="mini-list"></div>
+      </section>
+    </div>
+
   </aside>
 </div>
 
 <script src="https://code.iconify.design/iconify-icon/2.1.0/iconify-icon.min.js"></script>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/ag-charts-community@10.3.5/dist/umd/ag-charts-community.js"></script>
 <script src="js/data.js"></script>
 <script src="js/state.js"></script>
+<script src="js/charts.js"></script>
 <script src="js/modal.js"></script>
 <script src="js/toast.js"></script>
 <script src="js/filters.js"></script>
@@ -246,6 +351,9 @@
 <script src="js/quickActions.js"></script>
 <script src="js/routes.js"></script>
 <script src="js/render.js"></script>
+<script src="js/tabs.js"></script>
+<script src="js/analyticsOps.js"></script>
+<script src="js/analyticsFin.js"></script>
 <script src="js/main.js"></script>
 </body>
 </html>
