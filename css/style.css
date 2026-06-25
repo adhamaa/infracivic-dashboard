@@ -611,7 +611,12 @@ iconify-icon {
 }
 
 .kpi-card {
-  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 36px;
+  grid-template-rows: auto auto;
+  column-gap: 6px;
+  row-gap: 4px;
+  align-items: center;
   padding: 9px 7px;
   border-radius: 8px;
   overflow: hidden;
@@ -620,6 +625,11 @@ iconify-icon {
   box-shadow: 0 3px 10px rgba(28,40,66,.06);
 }
 
+.kpi-card .kpi-lbl {
+  grid-column: 1 / -1;
+  min-width: 0;
+  margin-bottom: 0;
+}
 .kpi-lbl { font-size: 9px; color: #65758b; margin-bottom: 4px; line-height: 1.35; }
 .kpi-num { font-size: 22px; font-weight: 800; line-height: 1; }
 .kn-blue   { color: var(--blue); }
@@ -628,8 +638,9 @@ iconify-icon {
 .kn-purple { color: var(--p600); }
 
 .kpi-ico {
-  position: absolute; right: 8px; top: 50%;
-  transform: translateY(-50%);
+  position: static;
+  justify-self: end;
+  align-self: center;
   width: 36px; height: 36px;
   border-radius: 8px;
   display: grid; place-items: center;
@@ -647,23 +658,36 @@ iconify-icon {
 }
 
 .kpi-wide {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 40px;
+  grid-template-rows: auto auto;
+  column-gap: 8px;
+  row-gap: 4px;
+  align-items: end;
   background: #fff;
   border: 1px solid var(--g100);
   border-radius: 8px;
   padding: 9px 10px;
-  position: relative;
   overflow: hidden;
   box-shadow: 0 3px 10px rgba(28,40,66,.06);
 }
 
+.kpi-wide .kpi-lbl {
+  grid-column: 1 / -1;
+  min-width: 0;
+  margin-bottom: 0;
+}
+
 .kpi-big {
   font-size: 18px; font-weight: 800;
-  color: var(--g900); margin-top: 3px;
+  color: var(--g900); margin-top: 0;
+  align-self: center;
 }
 
 .kpi-wide-ico {
-  position: absolute; right: 10px; top: 50%;
-  transform: translateY(-50%);
+  position: static;
+  justify-self: end;
+  align-self: center;
   display: grid; place-items: center;
   width: 40px; height: 40px;
   border-radius: 8px;
