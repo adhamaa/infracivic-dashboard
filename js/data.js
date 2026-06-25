@@ -266,6 +266,27 @@ const PAYMENT_VELOCITY = [
   { concession: 'SPRINT', submitted: 486, approved: 392, released: 318 },
 ];
 
+const PAYMENT_VELOCITY_TREND = [
+  { month: 'Jan', concession: 'PLUS', submitted: 128, approved: 104, released: 86 },
+  { month: 'Feb', concession: 'PLUS', submitted: 142, approved: 116, released: 98 },
+  { month: 'Mar', concession: 'PLUS', submitted: 156, approved: 130, released: 110 },
+  { month: 'Apr', concession: 'PLUS', submitted: 168, approved: 138, released: 119 },
+  { month: 'May', concession: 'PLUS', submitted: 181, approved: 151, released: 130 },
+  { month: 'Jun', concession: 'PLUS', submitted: 192, approved: 163, released: 142 },
+  { month: 'Jan', concession: 'LITRAK', submitted: 82, approved: 68, released: 54 },
+  { month: 'Feb', concession: 'LITRAK', submitted: 91, approved: 74, released: 61 },
+  { month: 'Mar', concession: 'LITRAK', submitted: 98, approved: 82, released: 68 },
+  { month: 'Apr', concession: 'LITRAK', submitted: 104, approved: 87, released: 73 },
+  { month: 'May', concession: 'LITRAK', submitted: 113, approved: 94, released: 78 },
+  { month: 'Jun', concession: 'LITRAK', submitted: 121, approved: 99, released: 84 },
+  { month: 'Jan', concession: 'SPRINT', submitted: 55, approved: 44, released: 34 },
+  { month: 'Feb', concession: 'SPRINT', submitted: 61, approved: 48, released: 38 },
+  { month: 'Mar', concession: 'SPRINT', submitted: 66, approved: 52, released: 42 },
+  { month: 'Apr', concession: 'SPRINT', submitted: 72, approved: 57, released: 47 },
+  { month: 'May', concession: 'SPRINT', submitted: 78, approved: 62, released: 51 },
+  { month: 'Jun', concession: 'SPRINT', submitted: 84, approved: 67, released: 56 },
+];
+
 const OPEN_CLAIMS = [
   { id: 'CLM-2026-8841', concession: 'PLUS', value: 96.4, daysPending: 42, approver: 'Finance Director', status: 'Review' },
   { id: 'CLM-2026-8794', concession: 'LITRAK', value: 72.8, daysPending: 36, approver: 'JKR Verifier', status: 'Submitted' },
@@ -322,6 +343,7 @@ window.IC_DATA = {
   DEFECT_MIX,
   CLAIMS_AGING,
   PAYMENT_VELOCITY,
+  PAYMENT_VELOCITY_TREND,
   OPEN_CLAIMS,
   BUDGET_BURN,
   MONTHLY_RELEASES,

@@ -27,19 +27,51 @@
   function renderClaimsAging() {
     const grouped = bucketTotals(concessionItems(D.CLAIMS_AGING));
     const bucketClick = event => openClaimsBucket(event.datum.bucket);
+    const bucketData = grouped.map(row => ({
+      bucket: row.bucket,
+      label: shortBucketLabel(row.bucket),
+      total: row.submitted + row.review + row.approved + row.rejected,
+    }));
+    const statusData = claimStatusTotals(grouped);
     IC.charts.createChart('fin-aging-chart', {
-      data: grouped,
+      data: bucketData,
+      padding: { top: 12, right: 24, bottom: 12, left: 24 },
       series: [
-        { type: 'bar', direction: 'vertical', xKey: 'bucket', yKey: 'submitted', yName: 'Submitted', stacked: true, fill: IC.charts.palette.slate, listeners: { nodeClick: bucketClick } },
-        { type: 'bar', direction: 'vertical', xKey: 'bucket', yKey: 'review', yName: 'Under Review', stacked: true, fill: IC.charts.palette.blue, listeners: { nodeClick: bucketClick } },
-        { type: 'bar', direction: 'vertical', xKey: 'bucket', yKey: 'approved', yName: 'Approved', stacked: true, fill: IC.charts.palette.green, listeners: { nodeClick: bucketClick } },
-        { type: 'bar', direction: 'vertical', xKey: 'bucket', yKey: 'rejected', yName: 'Rejected', stacked: true, fill: IC.charts.palette.red, listeners: { nodeClick: bucketClick } },
+        {
+          type: 'pie',
+          data: statusData,
+          angleKey: 'value',
+          angleName: 'Claims',
+          calloutLabelKey: 'status',
+          legendItemKey: 'status',
+          outerRadiusRatio: 0.46,
+          sectorSpacing: 1,
+          fills: ['#64748b', IC.charts.palette.blue, IC.charts.palette.green, IC.charts.palette.red],
+          strokes: ['#ffffff'],
+          calloutLabel: { enabled: false },
+          sectorLabel: { enabled: true, color: '#ffffff', fontSize: 9, fontWeight: 900, formatter: params => params.datum.short },
+          tooltip: { renderer: params => ({ content: `${params.datum.status}: ${params.datum.value.toLocaleString('en-MY')} claims` }) },
+        },
+        {
+          type: 'donut',
+          data: bucketData,
+          angleKey: 'total',
+          angleName: 'Claims',
+          calloutLabelKey: 'label',
+          legendItemKey: 'bucket',
+          innerRadiusRatio: 0.58,
+          outerRadiusRatio: 0.94,
+          sectorSpacing: 2,
+          cornerRadius: 3,
+          fills: [IC.charts.palette.blue, IC.charts.palette.cyan, IC.charts.palette.amber, IC.charts.palette.violet],
+          strokes: ['#ffffff'],
+          calloutLabel: { enabled: true, minAngle: 0, offset: 4, fontSize: 10, formatter: params => `${params.datum.label} ${params.datum.total}` },
+          sectorLabel: { enabled: false },
+          tooltip: { renderer: params => ({ content: `${params.datum.bucket}: ${params.datum.total.toLocaleString('en-MY')} claims` }) },
+          listeners: { nodeClick: bucketClick },
+        },
       ],
-      axes: [
-        { type: 'category', position: 'bottom', label: { color: '#64748b', fontSize: 10 } },
-        { type: 'number', position: 'left', label: { color: '#64748b', fontSize: 10 } },
-      ],
-      legend: { position: 'bottom' },
+      legend: { enabled: false },
     });
   }
 
@@ -50,18 +82,20 @@
       acc.released += item.released;
       return acc;
     }, { stage: 'RM value', submitted: 0, approved: 0, released: 0 });
+    const trend = paymentVelocityTrend(concessionItems(D.PAYMENT_VELOCITY_TREND));
     IC.charts.createChart('fin-velocity-chart', {
-      data: [totals],
+      data: trend,
+      padding: { top: 16, right: 18, bottom: 38, left: 48 },
       series: [
-        { type: 'bar', direction: 'horizontal', xKey: 'stage', yKey: 'submitted', yName: 'Submitted', stacked: true, fill: IC.charts.palette.slate },
-        { type: 'bar', direction: 'horizontal', xKey: 'stage', yKey: 'approved', yName: 'Approved', stacked: true, fill: IC.charts.palette.blue },
-        { type: 'bar', direction: 'horizontal', xKey: 'stage', yKey: 'released', yName: 'Released', stacked: true, fill: IC.charts.palette.green },
+        { type: 'area', xKey: 'month', yKey: 'submitted', yName: 'Submitted', stacked: false, fill: IC.charts.palette.slate, fillOpacity: 0.18, stroke: IC.charts.palette.slate, strokeWidth: 2.2, marker: { enabled: false } },
+        { type: 'area', xKey: 'month', yKey: 'approved', yName: 'Approved', stacked: false, fill: IC.charts.palette.blue, fillOpacity: 0.2, stroke: IC.charts.palette.blue, strokeWidth: 2.2, marker: { enabled: false } },
+        { type: 'area', xKey: 'month', yKey: 'released', yName: 'Released', stacked: false, fill: IC.charts.palette.green, fillOpacity: 0.24, stroke: IC.charts.palette.green, strokeWidth: 2.2, marker: { enabled: false } },
       ],
       axes: [
-        { type: 'category', position: 'left', label: { enabled: false } },
-        { type: 'number', position: 'bottom', label: { enabled: false }, line: { enabled: false }, tick: { enabled: false } },
+        { type: 'category', position: 'bottom', label: { color: '#64748b', fontSize: 10 } },
+        { type: 'number', position: 'left', label: { formatter: params => `RM ${params.value}M`, color: '#64748b', fontSize: 10 }, gridLine: { style: [{ stroke: '#e2e8f0', lineDash: [2, 4] }] } },
       ],
-      legend: { enabled: false },
+      legend: { position: 'bottom', spacing: 4, item: { marker: { size: 7 }, label: { fontSize: 9 } } },
     });
     const approvedRate = totals.submitted ? totals.approved / totals.submitted * 100 : 0;
     const releasedRate = totals.approved ? totals.released / totals.approved * 100 : 0;
@@ -70,6 +104,17 @@
       <span>${approvedRate.toFixed(1)}% approved</span>
       <span>${releasedRate.toFixed(1)}% released after approval</span>
     `);
+  }
+
+  function paymentVelocityTrend(items) {
+    return [...items.reduce((map, item) => {
+      const row = map.get(item.month) || { month: item.month, submitted: 0, approved: 0, released: 0 };
+      row.submitted += item.submitted;
+      row.approved += item.approved;
+      row.released += item.released;
+      map.set(item.month, row);
+      return map;
+    }, new Map()).values()];
   }
 
   function renderOpenClaims() {
@@ -166,6 +211,31 @@
       buckets.set(item.bucket, row);
     });
     return [...buckets.values()];
+  }
+
+  function claimStatusTotals(grouped) {
+    const totals = grouped.reduce((acc, row) => {
+      acc.submitted += row.submitted;
+      acc.review += row.review;
+      acc.approved += row.approved;
+      acc.rejected += row.rejected;
+      return acc;
+    }, { submitted: 0, review: 0, approved: 0, rejected: 0 });
+    return [
+      { status: 'Submitted', short: 'S', value: totals.submitted },
+      { status: 'Under Review', short: 'R', value: totals.review },
+      { status: 'Approved', short: 'A', value: totals.approved },
+      { status: 'Rejected', short: 'X', value: totals.rejected },
+    ];
+  }
+
+  function shortBucketLabel(bucket) {
+    return {
+      '0-7 days': '0-7d',
+      '8-14 days': '8-14d',
+      '15-30 days': '15-30d',
+      '30+ days': '30+d',
+    }[bucket] || bucket;
   }
 
   function openClaimsBucket(bucket) {
