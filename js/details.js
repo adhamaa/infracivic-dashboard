@@ -7,6 +7,7 @@
   function openIncidentDetail(id, assignMode = false) {
     const incident = IC.getIncident(id);
     if (!incident) return;
+    if (!assignMode) IC.focusIncidentOnMap?.(id);
     const visual = incident.status === 'resolved' ? 'completed' : incident.sev;
     IC.openModal({
       title: `${incident.kmLabel} · ${incident.location}`,

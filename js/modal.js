@@ -10,8 +10,7 @@
     root.className = 'modal-root';
     root.hidden = true;
     root.innerHTML = `
-      <div class="modal-backdrop" data-modal-close></div>
-      <section class="modal-card" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+      <section class="modal-card" role="dialog" aria-modal="false" aria-labelledby="modal-title">
         <header class="modal-head">
           <h2 id="modal-title"></h2>
           <button class="modal-close" type="button" data-modal-close aria-label="Close modal"><iconify-icon icon="mdi:close"></iconify-icon></button>
