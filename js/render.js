@@ -89,23 +89,64 @@
     if (IC.state.tab !== 'commandCentre') return;
     const el = document.getElementById('chart-conc');
     if (!el) return;
-    IC.charts.destroyChart('chart-conc');
     const selected = IC.state.filters.concession;
+    const max = Math.max(...D.CONCESSIONAIRES.map(item => item.value), 1);
     const data = D.CONCESSIONAIRES.map((item, index) => ({
       ...item,
       label: `${item.name}`,
+      track: max - item.value,
+      valueLabel: `RM ${item.value}M`,
       color: D.CONC_COLORS[index % D.CONC_COLORS.length],
       active: selected !== 'all' && item.concession === selected,
       dim: selected !== 'all' && item.concession !== selected,
     }));
-    const max = Math.max(...data.map(item => item.value), 1);
-    el.innerHTML = data.map(item => `
-      <div class="conc-row ${item.active ? 'conc-active' : ''} ${item.dim ? 'conc-dim' : ''}">
-        <span class="conc-name">${item.name}</span>
-        <span class="conc-track"><span class="conc-bar" style="width:${item.value / max * 100}%; background:${item.color}"></span></span>
-        <span class="conc-value">RM ${item.value}M</span>
-      </div>
-    `).join('');
+    IC.charts.createChart('chart-conc', {
+      data,
+      padding: { top: 14, right: 80, bottom: 12, left: 8 },
+      series: [
+        {
+          type: 'bar',
+          direction: 'horizontal',
+          xKey: 'label',
+          yKey: 'value',
+          stacked: true,
+          cornerRadius: 8,
+          itemStyler: params => ({
+            fill: params.datum.color,
+            fillOpacity: params.datum.dim ? 0.26 : 0.96,
+            stroke: params.datum.active ? '#3f1f76' : params.datum.color,
+            strokeWidth: params.datum.active ? 2 : 0,
+          }),
+          label: { enabled: false },
+          tooltip: { renderer: params => ({ content: `${params.datum.name}: ${params.datum.valueLabel}` }) },
+        },
+        {
+          type: 'bar',
+          direction: 'horizontal',
+          xKey: 'label',
+          yKey: 'track',
+          stacked: true,
+          cornerRadius: 8,
+          fill: '#e5e7eb',
+          fillOpacity: 1,
+          label: {
+            enabled: true,
+            placement: 'outside-end',
+            padding: 14,
+            color: '#334155',
+            fontSize: 11,
+            fontWeight: 800,
+            formatter: params => params.datum.valueLabel,
+          },
+          tooltip: { enabled: false },
+        },
+      ],
+      axes: [
+        { type: 'category', position: 'left', label: { color: '#475569', fontSize: 11, padding: 10 } },
+        { type: 'number', position: 'bottom', min: 0, max, label: { enabled: false }, line: { enabled: false }, tick: { enabled: false }, gridLine: { enabled: false } },
+      ],
+      legend: { enabled: false },
+    });
   }
 
   IC.initRender = initRender;

@@ -1159,11 +1159,9 @@ button.mini-row:hover { background: var(--g50); }
 
 /* Concessionaires chart */
 #chart-conc {
-  display: grid;
-  gap: 9px;
-  align-content: center;
+  display: block;
   height: 218px;
-  padding: 14px 18px 16px;
+  padding: 0;
   overflow: hidden;
   border-radius: 10px;
   background:
@@ -1171,54 +1169,10 @@ button.mini-row:hover { background: var(--g50); }
     radial-gradient(circle at 100% 0%, rgba(8,145,178,.08), transparent 32%);
 }
 
-.conc-row {
-  display: grid;
-  grid-template-columns: 110px minmax(0, 1fr) 64px;
-  align-items: center;
-  gap: 10px;
-  min-height: 20px;
-  font-size: 11px;
-  color: var(--g600);
-}
-
-.conc-name {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.conc-track {
-  height: 9px;
-  border-radius: 999px;
-  background: #e5e7eb;
-  overflow: hidden;
-}
-
-.conc-bar {
-  display: block;
-  height: 100%;
+#chart-conc .ag-charts-wrapper,
+#chart-conc .ag-charts-canvas-container,
+#chart-conc canvas {
   border-radius: inherit;
-  box-shadow: inset 0 1px 0 rgba(255,255,255,.28);
-}
-
-.conc-value {
-  color: var(--g700);
-  font-size: 11px;
-  font-weight: 800;
-  text-align: right;
-  white-space: nowrap;
-}
-
-.conc-row.conc-active {
-  color: var(--g900);
-  font-weight: 800;
-}
-.conc-row.conc-active .conc-track {
-  outline: 2px solid rgba(130,74,203,.18);
-  outline-offset: 2px;
-}
-.conc-row.conc-dim {
-  opacity: .45;
 }
 
 /* ── Interactive feature layers ─────────────────────────── */
