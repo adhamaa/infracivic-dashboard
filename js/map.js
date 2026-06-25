@@ -7,6 +7,7 @@
   let markerLayer;
   let stateLayer;
   let focusRouteLayer;
+  let defaultBounds;
   let currentBase;
   const baseLayers = {};
   const markerRefs = new Map();
@@ -24,6 +25,7 @@
 
     const malaysiaBounds = L.latLngBounds([[0.85, 99.4], [7.65, 119.5]]);
     const peninsularBounds = L.latLngBounds([[1.15, 99.6], [6.85, 104.7]]);
+    defaultBounds = peninsularBounds;
     map = L.map(el, {
       zoomControl: false,
       attributionControl: false,
@@ -157,9 +159,16 @@
     setTimeout(() => pulseIncidentMarker(id), 650);
   }
 
-  function clearFocusedRoute() {
+  function clearFocusedRoute({ resetView = false } = {}) {
     activeRouteRequest += 1;
     focusRouteLayer?.clearLayers();
+    if (resetView && map && defaultBounds) {
+      map.flyToBounds(defaultBounds, {
+        animate: true,
+        duration: 0.65,
+        padding: [18, 18],
+      });
+    }
   }
 
   function drawFocusRoute(routePath, incident) {

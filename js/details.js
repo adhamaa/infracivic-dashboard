@@ -14,6 +14,7 @@
       body: renderDetailBody(incident, visual, assignMode),
       footer: renderDetailFooter(incident),
       afterOpen: root => bindDetailActions(root, incident),
+      onClose: () => IC.clearFocusedRoute?.({ resetView: true }),
     });
   }
 

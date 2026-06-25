@@ -3,6 +3,7 @@
 (() => {
   const IC = window.IC = window.IC || {};
   let root;
+  let onClose;
 
   function initModal() {
     root = document.createElement('div');
@@ -28,8 +29,9 @@
     });
   }
 
-  function openModal({ title, body = '', footer = '', afterOpen } = {}) {
+  function openModal({ title, body = '', footer = '', afterOpen, onClose: nextOnClose } = {}) {
     if (!root) initModal();
+    onClose = typeof nextOnClose === 'function' ? nextOnClose : undefined;
     root.querySelector('#modal-title').textContent = title || '';
     root.querySelector('.modal-body').innerHTML = body;
     root.querySelector('.modal-footer').innerHTML = footer || '<button class="modal-btn secondary" type="button" data-modal-close>Close</button>';
@@ -39,7 +41,9 @@
 
   function closeModal() {
     if (root) root.hidden = true;
-    IC.clearFocusedRoute?.();
+    const callback = onClose;
+    onClose = undefined;
+    callback?.();
   }
 
   IC.initModal = initModal;
