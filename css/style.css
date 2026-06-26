@@ -297,6 +297,58 @@ iconify-icon {
 
 .ag-chart.compact { min-height: 150px; }
 .ag-chart.mini { height: 154px; min-height: 154px; padding: 8px; }
+.ag-chart.bubble-card { height: 240px; min-height: 240px; padding: 6px; }
+
+.budget-gauges {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px;
+  padding: 10px;
+}
+
+.budget-gauge {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background: #fff;
+  border: 1px solid var(--g100);
+  border-radius: 10px;
+  padding: 6px 4px 8px;
+  box-shadow: 0 3px 10px rgba(28,40,66,.05);
+  min-width: 0;
+}
+
+.budget-gauge .ag-chart {
+  height: 96px;
+  min-height: 96px;
+  padding: 0;
+  background: transparent;
+  flex: 0 0 auto;
+  width: 100%;
+}
+
+.budget-gauge .budget-meta {
+  text-align: center;
+  margin-top: 2px;
+  line-height: 1.25;
+}
+
+.budget-gauge .budget-meta strong {
+  display: block;
+  font-size: 11.5px;
+  color: var(--g900);
+}
+
+.budget-gauge .budget-meta strong .good { color: var(--green); margin-left: 4px; font-weight: 800; }
+.budget-gauge .budget-meta strong .warn { color: #ca8a04; margin-left: 4px; font-weight: 800; }
+.budget-gauge .budget-meta strong .bad  { color: var(--red);   margin-left: 4px; font-weight: 800; }
+
+.budget-gauge .budget-meta small {
+  display: block;
+  font-size: 9.5px;
+  color: var(--g500);
+  margin-top: 1px;
+}
 
 .chart-empty {
   height: 100%;

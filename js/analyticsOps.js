@@ -194,15 +194,91 @@
       ${wideKpi('Critical MTTR', `${currentMttr.toFixed(1)}h`, 'kn-purple', 'mdi:clock-fast')}
       ${wideKpi('Open Backlog', backlog.toLocaleString('en-MY'), 'kn-orange', 'mdi:tray-full')}
     `);
-    setHtml('op-top-contractors', contractors.slice(0, 5).map(item => `
-      <button class="mini-row" type="button" data-contractor="${item.name}">
-        <span><strong>${item.name}</strong><small>${item.concession} · ${item.jobs} jobs</small></span>
-        <b>${item.sla}%</b>
-      </button>
-    `).join(''));
-    document.querySelectorAll('#op-top-contractors [data-contractor]').forEach(row => {
-      row.addEventListener('click', () => IC.openContractorDetail?.(row.dataset.contractor));
+    renderTopContractorsBubble(contractors.slice(0, 5));
+  }
+
+  function renderTopContractorsBubble(rows) {
+    if (!rows.length) return;
+    const concessions = ['PLUS', 'LITRAK', 'SPRINT'];
+    const concessionFill = {
+      PLUS: IC.charts.palette.violet,
+      LITRAK: IC.charts.palette.cyan,
+      SPRINT: IC.charts.palette.green,
+    };
+    const data = rows.map(row => ({
+      name: row.name,
+      shortName: shortContractor(row.name),
+      concession: row.concession,
+      jobs: row.jobs,
+      sla: row.sla,
+      rework: row.rework,
+    }));
+    const slas = data.map(d => d.sla);
+    const slaMin = Math.max(0, Math.floor(Math.min(...slas) - 5));
+    const slaMax = Math.min(100, Math.ceil(Math.max(...slas) + 5));
+    const series = concessions
+      .filter(c => data.some(d => d.concession === c))
+      .map(concession => ({
+        type: 'bubble',
+        data: data.filter(d => d.concession === concession),
+        xKey: 'jobs',
+        xName: 'Jobs',
+        yKey: 'sla',
+        yName: concession,
+        sizeKey: 'jobs',
+        sizeName: 'Jobs',
+        labelKey: 'shortName',
+        label: { enabled: true, fontSize: 9, fontWeight: 800, color: '#ffffff' },
+        range: [20, 42],
+        fill: concessionFill[concession],
+        fillOpacity: 0.78,
+        stroke: '#ffffff',
+        strokeWidth: 1.4,
+        tooltip: {
+          renderer: params => ({
+            title: params.datum.name,
+            content: `${params.datum.concession} · ${params.datum.jobs} jobs · SLA ${params.datum.sla}% · ${params.datum.rework.toFixed(1)}% rework`,
+          }),
+        },
+        listeners: {
+          nodeClick: event => IC.openContractorDetail?.(event.datum.name),
+        },
+      }));
+    IC.charts.createChart('op-top-contractors', {
+      padding: { top: 12, right: 22, bottom: 28, left: 40 },
+      series,
+      axes: [
+        {
+          type: 'number',
+          position: 'bottom',
+          title: { text: 'Jobs', fontSize: 10 },
+          label: { color: '#64748b', fontSize: 10 },
+          nice: true,
+        },
+        {
+          type: 'number',
+          position: 'left',
+          min: slaMin,
+          max: slaMax,
+          title: { text: 'SLA %', fontSize: 10 },
+          label: { formatter: params => `${params.value}%`, color: '#64748b', fontSize: 10 },
+          gridLine: { style: [{ stroke: '#e2e8f0', lineDash: [2, 4] }] },
+          crossLines: [{
+            type: 'line',
+            value: 90,
+            stroke: IC.charts.palette.green,
+            strokeWidth: 1.2,
+            lineDash: [3, 3],
+            label: { text: 'Target 90%', position: 'top-end', color: IC.charts.palette.green, fontSize: 9, fontWeight: 700 },
+          }],
+        },
+      ],
+      legend: { position: 'bottom', spacing: 4, item: { marker: { size: 8 }, label: { fontSize: 9 } } },
     });
+  }
+
+  function shortContractor(name) {
+    return name.split(/\s+/)[0];
   }
 
   function shortDefectLabel(category) {

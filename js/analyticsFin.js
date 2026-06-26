@@ -187,17 +187,58 @@
       ],
       legend: { enabled: false },
     });
-    const statuses = concessionItems(D.BUDGET_BURN).map(item => {
-      const spent = item.spent / item.allocated * 100;
-      const klass = spent > 85 ? 'bad' : spent > 70 ? 'warn' : 'good';
+    renderBudgetGauges(concessionItems(D.BUDGET_BURN));
+  }
+
+  function renderBudgetGauges(items) {
+    const host = document.getElementById('fin-budget-status');
+    if (!host) return;
+    items.forEach(item => IC.charts.destroyChart(`fin-budget-gauge-${item.concession}`));
+    host.innerHTML = items.map(item => {
+      const pct = item.allocated ? Math.round(item.spent / item.allocated * 100) : 0;
+      const klass = pct > 85 ? 'bad' : pct > 70 ? 'warn' : 'good';
       return `
-        <div class="mini-row status-row">
-          <span><strong>${item.concession}</strong><small>RM ${item.spent}M of RM ${item.allocated}M</small></span>
-          <b class="${klass}">${spent.toFixed(0)}%</b>
+        <div class="budget-gauge">
+          <div id="fin-budget-gauge-${item.concession}" class="ag-chart"></div>
+          <div class="budget-meta">
+            <strong>${item.concession} <span class="${klass}">${pct}%</span></strong>
+            <small>RM${item.spent}M / RM${item.allocated}M</small>
+          </div>
         </div>
       `;
     }).join('');
-    setHtml('fin-budget-status', statuses);
+    items.forEach(item => {
+      const pct = item.allocated ? item.spent / item.allocated * 100 : 0;
+      const remaining = Math.max(0, 100 - pct);
+      const fill = pct > 85 ? IC.charts.palette.red : pct > 70 ? IC.charts.palette.amber : IC.charts.palette.green;
+      IC.charts.createChart(`fin-budget-gauge-${item.concession}`, {
+        padding: { top: 4, right: 4, bottom: 4, left: 4 },
+        series: [{
+          type: 'donut',
+          data: [
+            { key: 'spent', value: pct },
+            { key: 'rest', value: remaining },
+          ],
+          angleKey: 'value',
+          legendItemKey: 'key',
+          innerRadiusRatio: 0.72,
+          outerRadiusRatio: 0.98,
+          startAngle: -135,
+          endAngle: 135,
+          cornerRadius: 4,
+          sectorSpacing: 0,
+          fills: [fill, '#e2e8f0'],
+          strokes: ['#ffffff'],
+          calloutLabel: { enabled: false },
+          sectorLabel: { enabled: false },
+          tooltip: { enabled: false },
+          innerLabels: [
+            { text: `${Math.round(pct)}%`, fontSize: 16, fontWeight: 900, color: '#0f172a', spacing: 0 },
+          ],
+        }],
+        legend: { enabled: false },
+      });
+    });
   }
 
   function bucketTotals(items) {
