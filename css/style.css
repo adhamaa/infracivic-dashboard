@@ -2332,30 +2332,39 @@ button.mini-row:hover { background: var(--g50); }
 
 /* ── Workforce ────────────────────────────────────────────── */
 .util-gauges {
-  flex: 1; padding: 12px;
-  display: grid;
-  grid-template-columns: repeat(5, minmax(0, 1fr));
-  gap: 8px;
+  flex: 1; padding: 14px;
+  display: flex;
+  flex-wrap: wrap;
+  align-content: center;
+  justify-content: center;
+  gap: 10px;
 }
 .util-gauge {
+  width: 116px;
   display: flex; flex-direction: column; align-items: center;
-  padding: 8px 6px;
-  background: var(--g50); border-radius: 10px;
+  justify-content: center;
+  min-height: 122px;
+  padding: 10px 8px;
+  background: linear-gradient(180deg, #fff 0%, var(--g50) 100%);
+  border: 1px solid color-mix(in srgb, currentColor 18%, var(--g100));
+  border-radius: 12px;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.9), 0 8px 18px rgba(15,23,42,.05);
   color: var(--g500);
   position: relative;
   cursor: pointer;
-  transition: background .12s ease, transform .12s ease;
+  overflow: hidden;
+  transition: background .12s ease, border-color .12s ease, transform .12s ease;
 }
-.util-gauge:hover { background: var(--tab-soft, var(--g100)); transform: translateY(-1px); }
+.util-gauge:hover { background: #fff; border-color: color-mix(in srgb, currentColor 32%, var(--g100)); transform: translateY(-1px); }
 .util-gauge.util-ok    { color: #16a34a; }
 .util-gauge.util-under { color: #2563eb; }
 .util-gauge.util-over  { color: #dc2626; }
-.gauge-svg { width: 100%; max-width: 110px; height: auto; }
+.gauge-svg { width: 92px; max-width: 100%; height: auto; }
 .gauge-value {
-  margin-top: -20px; font-size: 18px; font-weight: 900; color: var(--g900);
+  margin-top: -18px; font-size: 18px; font-weight: 900; color: var(--g900);
 }
-.gauge-label { font-size: 10px; font-weight: 800; color: var(--g700); margin-top: 4px; text-align: center; }
-.gauge-meta  { font-size: 9px; color: var(--g500); text-align: center; }
+.gauge-label { font-size: 11px; font-weight: 800; color: var(--g700); margin-top: 5px; text-align: center; }
+.gauge-meta  { max-width: 88px; font-size: 9.5px; line-height: 1.25; color: var(--g500); text-align: center; }
 
 /* ── Reports ──────────────────────────────────────────────── */
 .report-library { flex: 1; overflow: auto; }
