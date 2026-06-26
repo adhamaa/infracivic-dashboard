@@ -24,27 +24,56 @@
     return IC.charts.filteredByConcession(items);
   }
 
+  function incidentItems() {
+    return IC.getFilteredIncidents ? IC.getFilteredIncidents() : [];
+  }
+
+  function incidentSlaRows() {
+    const severities = ['critical', 'high', 'medium', 'low'];
+    const rows = new Map();
+    incidentItems().forEach(incident => {
+      if (incident.status === 'resolved') return;
+      const row = rows.get(incident.concession) || { concession: incident.concession };
+      const key = incident.sev;
+      if (!severities.includes(key)) return;
+      row[`${key}Open`] = (row[`${key}Open`] || 0) + incident.count;
+      rows.set(incident.concession, row);
+    });
+    return [...rows.values()].map(row => {
+      severities.forEach(key => {
+        const open = row[`${key}Open`] || 0;
+        row[key] = open ? estimateSla(key, open) : 0;
+      });
+      row.average = average(severities.filter(key => row[`${key}Open`]).map(key => row[key]));
+      return row;
+    });
+  }
+
+  function estimateSla(severity, openCount) {
+    const base = { critical: 87, high: 90, medium: 93, low: 96 }[severity] || 90;
+    return Math.max(72, Math.min(98, Math.round(base - Math.sqrt(openCount) * 1.7)));
+  }
+
+  function defectCategory(incident) {
+    const text = `${incident.description || ''} ${incident.location || ''}`.toLowerCase();
+    if (text.includes('drainage') || text.includes('water')) return 'Drainage';
+    if (text.includes('guardrail') || text.includes('shoulder')) return 'Guardrail';
+    if (text.includes('signage') || text.includes('visibility')) return 'Signage';
+    if (text.includes('bridge') || text.includes('joint')) return 'Bridge Joint';
+    return 'Pavement';
+  }
+
   function renderSlaHeatmap() {
     const container = document.getElementById('op-sla-chart');
     if (!container) return;
     IC.charts.destroyChart('op-sla-chart');
-    const data = concessionItems(D.SLA_BY_CONCESSION_SEVERITY);
     const severities = [
       { key: 'critical', label: 'Critical', color: D.SEV_COLORS.critical },
       { key: 'high', label: 'High', color: D.SEV_COLORS.high },
       { key: 'medium', label: 'Medium', color: D.SEV_COLORS.medium },
       { key: 'low', label: 'Low', color: D.SEV_COLORS.low },
     ];
-    const rows = [...data.reduce((map, item) => {
-      const row = map.get(item.concession) || { concession: item.concession };
-      row[item.severity.toLowerCase()] = item.value;
-      row[`${item.severity.toLowerCase()}Open`] = item.open;
-      map.set(item.concession, row);
-      return map;
-    }, new Map()).values()].map(row => ({
-      ...row,
-      average: average(severities.map(item => row[item.key] || 0)),
-    }));
+    const rows = incidentSlaRows();
 
     container.innerHTML = `
       <div class="sla-health">
@@ -123,11 +152,20 @@
 
   function renderDefectMix() {
     const totals = new Map();
-    concessionItems(D.DEFECT_MIX).forEach(item => totals.set(item.category, (totals.get(item.category) || 0) + item.count));
+    incidentItems().forEach(incident => {
+      const category = defectCategory(incident);
+      totals.set(category, (totals.get(category) || 0) + incident.count);
+    });
     const data = [...totals.entries()]
       .map(([category, count]) => ({ category, count }))
       .sort((a, b) => b.count - a.count);
     const total = data.reduce((sum, item) => sum + item.count, 0);
+    if (!data.length) {
+      IC.charts.destroyChart('op-defect-mix-chart');
+      const el = document.getElementById('op-defect-mix-chart');
+      if (el) el.innerHTML = '<div class="chart-empty">No defects match current filters.</div>';
+      return;
+    }
     IC.charts.createChart('op-defect-mix-chart', {
       type: 'donut',
       data,
@@ -177,18 +215,18 @@
   }
 
   function renderOperationsRail() {
-    const sla = concessionItems(D.SLA_BY_CONCESSION_SEVERITY);
+    const sla = incidentSlaRows();
     const contractors = concessionItems(D.CONTRACTORS).sort((a, b) => b.sla - a.sla);
-    const overallSla = average(sla.map(item => item.value));
-    const critical = average(sla.filter(item => item.severity === 'Critical').map(item => item.value));
-    const high = average(sla.filter(item => item.severity === 'High').map(item => item.value));
+    const overallSla = average(sla.map(item => item.average).filter(Boolean));
+    const critical = average(sla.filter(item => item.criticalOpen).map(item => item.critical));
+    const high = average(sla.filter(item => item.highOpen).map(item => item.high));
     const currentMttr = D.MTTR_TREND.at(-1).critical;
-    const backlog = sla.reduce((sum, item) => sum + item.open, 0);
+    const backlog = sla.reduce((sum, item) => sum + (item.criticalOpen || 0) + (item.highOpen || 0) + (item.mediumOpen || 0) + (item.lowOpen || 0), 0);
 
     setHtml('op-sla-kpis', `
-      ${kpiCard('Critical SLA', `${critical.toFixed(0)}%`, 'kn-orange', 'mdi:alert-circle-outline', 'ico-orange')}
-      ${kpiCard('High SLA', `${high.toFixed(0)}%`, 'kn-blue', 'mdi:timer-check-outline', 'ico-blue')}
-      ${kpiCard('Overall SLA', `${overallSla.toFixed(0)}%`, 'kn-green', 'mdi:shield-check-outline', 'ico-green')}
+      ${kpiCard('Critical SLA', critical ? `${critical.toFixed(0)}%` : '—', 'kn-orange', 'mdi:alert-circle-outline', 'ico-orange')}
+      ${kpiCard('High SLA', high ? `${high.toFixed(0)}%` : '—', 'kn-blue', 'mdi:timer-check-outline', 'ico-blue')}
+      ${kpiCard('Overall SLA', overallSla ? `${overallSla.toFixed(0)}%` : '—', 'kn-green', 'mdi:shield-check-outline', 'ico-green')}
     `);
     setHtml('op-response-kpis', `
       ${wideKpi('Critical MTTR', `${currentMttr.toFixed(1)}h`, 'kn-purple', 'mdi:clock-fast')}

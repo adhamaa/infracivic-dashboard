@@ -41,6 +41,27 @@
   function periodScale() { return PERIOD_SCALE[IC.state.filters.period] ?? 1; }
   function periodShort() { return PERIOD_SHORT[IC.state.filters.period] || '90d'; }
 
+  function filteredIncidents() {
+    return IC.getFilteredIncidents ? IC.getFilteredIncidents() : [];
+  }
+
+  function incidentHourlyData() {
+    const rows = Array.from({ length: 24 }, (_, i) => {
+      const hour = (new Date().getHours() - 23 + i + 24) % 24;
+      return { label: String(hour).padStart(2, '0') + ':00', critical: 0, high: 0, medium: 0 };
+    });
+    const byLabel = new Map(rows.map(row => [row.label, row]));
+    filteredIncidents().forEach(incident => {
+      const hour = new Date(incident.createdAt).getHours();
+      const row = byLabel.get(String(hour).padStart(2, '0') + ':00');
+      if (!row || incident.status === 'resolved') return;
+      if (incident.sev === 'critical') row.critical += incident.count;
+      else if (incident.sev === 'high') row.high += incident.count;
+      else row.medium += incident.count;
+    });
+    return rows;
+  }
+
   // ───────────────────────── INCIDENTS ─────────────────────────
   function renderIncidentsTab() {
     renderIncidentHourly();
@@ -52,8 +73,10 @@
   function renderIncidentHourly() {
     if (!document.getElementById('inc-hourly-chart')) return;
     IC.charts.destroyChart('inc-hourly-chart');
+    const data = incidentHourlyData();
+    if (!data.some(row => row.critical || row.high || row.medium)) { showChartEmpty('inc-hourly-chart', 'No incident volume matches current filters.'); return; }
     IC.charts.createChart('inc-hourly-chart', {
-      data: D.INCIDENT_HOURLY,
+      data,
       padding: { top: 14, right: 18, bottom: 38, left: 38 },
       series: [
         { type: 'bar', xKey: 'label', yKey: 'medium', yName: 'Medium', stacked: true, fill: SEV.medium, stroke: SEV.medium },
@@ -115,10 +138,10 @@
   function renderIncidentRail() {
     const trio = document.getElementById('inc-kpi-trio');
     if (trio) {
-      const incidents = IC.getFilteredIncidents ? IC.getFilteredIncidents() : [];
-      const open = incidents.filter(i => i.status !== 'resolved').length;
-      const critical = incidents.filter(i => i.sev === 'critical').length;
-      const today = D.INCIDENT_HOURLY.reduce((sum, h) => sum + h.critical + h.high + h.medium, 0);
+      const incidents = filteredIncidents();
+      const open = incidents.filter(i => i.status !== 'resolved').reduce((sum, item) => sum + item.count, 0);
+      const critical = incidents.filter(i => i.status !== 'resolved' && i.sev === 'critical').reduce((sum, item) => sum + item.count, 0);
+      const today = incidentHourlyData().reduce((sum, h) => sum + h.critical + h.high + h.medium, 0);
       trio.innerHTML = kpiTrio([
         { lbl: 'Open Incidents', val: open || '—', tone: 'orange', ico: 'mdi:alert' },
         { lbl: 'Critical Now',   val: critical,    tone: 'red',    ico: 'mdi:alarm-light' },

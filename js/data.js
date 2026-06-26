@@ -134,21 +134,20 @@ function enrichMarker(marker, index) {
 
 const MAP_MARKERS = BASE_MAP_MARKERS.map(enrichMarker);
 
-const ALERTS = [
-  { id:'alert-001', markerId:'inc-001', time:'2 min ago' },
-  { id:'alert-002', markerId:'inc-002', time:'15 min ago' },
-  { id:'alert-003', markerId:'inc-004', time:'32 min ago' },
-  { id:'alert-004', markerId:'inc-019', time:'1 hr ago' },
-  { id:'alert-005', markerId:'inc-006', time:'2 hr ago' },
-  { id:'alert-006', markerId:'inc-009', time:'8 hr ago' },
-  { id:'alert-007', markerId:'inc-013', time:'1 day ago' },
-  { id:'alert-008', markerId:'inc-014', time:'3 days ago' },
-  { id:'alert-009', markerId:'inc-017', time:'5 days ago' },
-  { id:'alert-010', markerId:'inc-018', time:'12 days ago' },
-].map(alert => {
-  const incident = MAP_MARKERS.find(item => item.id === alert.markerId);
+function relativeTimeLabel(date) {
+  const minutes = Math.max(1, Math.round((Date.now() - new Date(date).getTime()) / 60000));
+  if (minutes < 60) return `${minutes} min ago`;
+  const hours = Math.round(minutes / 60);
+  if (hours < 24) return `${hours} hr ago`;
+  const days = Math.round(hours / 24);
+  return `${days} day${days === 1 ? '' : 's'} ago`;
+}
+
+const ALERTS = MAP_MARKERS.map((incident, index) => {
   return {
-    ...alert,
+    id: `alert-${String(index + 1).padStart(3, '0')}`,
+    markerId: incident.id,
+    time: relativeTimeLabel(incident.createdAt),
     km: incident.kmLabel,
     desc: incident.description.replace(/\.$/, ''),
     sev: incident.sev,
