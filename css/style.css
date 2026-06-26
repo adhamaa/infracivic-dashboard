@@ -1064,6 +1064,21 @@ button.mini-row:hover { background: var(--g50); }
   border-radius: 12px;
   box-shadow: 0 16px 34px rgba(15,23,42,.22);
 }
+.leaflet-container .state-popup-shell a.leaflet-popup-close-button {
+  top: 8px;
+  right: 8px;
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  color: var(--g500);
+  font: 18px/28px var(--font);
+  z-index: 2;
+}
+.leaflet-container .state-popup-shell a.leaflet-popup-close-button:hover,
+.leaflet-container .state-popup-shell a.leaflet-popup-close-button:focus {
+  background: var(--g100);
+  color: var(--g700);
+}
 .state-popup-shell .leaflet-popup-content {
   margin: 0;
   width: 292px !important;
@@ -1078,6 +1093,8 @@ button.mini-row:hover { background: var(--g50); }
   align-items: flex-start;
   justify-content: space-between;
   gap: 10px;
+  min-height: 28px;
+  padding-right: 34px;
   margin-bottom: 10px;
 }
 .state-popup-head span {
@@ -1092,7 +1109,9 @@ button.mini-row:hover { background: var(--g50); }
   color: var(--g900);
   font-size: 14px;
   line-height: 1.2;
+  max-width: 150px;
   text-align: right;
+  overflow-wrap: anywhere;
 }
 .state-popup-grid {
   display: grid;

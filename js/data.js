@@ -60,25 +60,34 @@ const STATUS_LABELS = {
 };
 
 const BASE_MAP_MARKERS = [
-  { lat:6.12, lng:102.24, count:8,  sev:'critical', km:'KM 275.2 (E1)', location:'Kota Bharu - Kuala Terengganu' },
-  { lat:5.33, lng:103.14, count:11, sev:'critical', km:'KM 112.3 (E2)', location:'Kuala Terengganu interchange' },
-  { lat:3.14, lng:101.62, count:5,  sev:'critical', km:'KM 18.4 (E1)', location:'Kuala Lumpur urban corridor' },
-  { lat:4.77, lng:100.94, count:4,  sev:'critical', km:'KM 64.1 (Federal Rte 5)', location:'Ipoh - Kuala Kangsar' },
-  { lat:3.81, lng:103.32, count:19, sev:'high', km:'KM 91.5 (Route 3)', location:'Kuantan coastal route' },
-  { lat:4.24, lng:101.97, count:25, sev:'high', km:'KM 132.8 (E8)', location:'Central Pahang link' },
-  { lat:2.93, lng:102.44, count:29, sev:'high', km:'KM 208.7 (E2)', location:'Negeri Sembilan approach' },
-  { lat:1.87, lng:103.33, count:20, sev:'high', km:'KM 319.6 (E2)', location:'Johor central route' },
-  { lat:1.55, lng:103.77, count:15, sev:'high', km:'KM 335.1 (E2)', location:'Johor Bahru entry' },
-  { lat:5.41, lng:100.33, count:13, sev:'medium', km:'KM 7.2 (E1)', location:'Penang island approach' },
-  { lat:4.60, lng:101.09, count:12, sev:'medium', km:'KM 72.8 (E1)', location:'Ipoh northbound' },
-  { lat:3.45, lng:101.53, count:30, sev:'medium', km:'KM 442.0 (E1)', location:'Rawang - Kuala Lumpur' },
-  { lat:3.02, lng:101.73, count:30, sev:'medium', km:'KM 11.6 (E37)', location:'Kajang distributor' },
-  { lat:2.19, lng:102.25, count:36, sev:'medium', km:'KM 221.9 (E2)', location:'Melaka corridor' },
-  { lat:6.00, lng:102.10, count:8,  sev:'low', km:'KM 188.4 (Route 3)', location:'Kelantan coastal section' },
-  { lat:3.80, lng:103.26, count:17, sev:'low', km:'KM 104.2 (Route 3)', location:'Kuantan bypass' },
-  { lat:1.90, lng:103.35, count:10, sev:'low', km:'KM 292.4 (E2)', location:'Batu Pahat link' },
-  { lat:5.85, lng:102.00, count:38, sev:'low', km:'KM 219.0 (Route 8)', location:'Kelantan interior route' },
-  { lat:2.72, lng:101.94, count:18, sev:'low', km:'KM 19.8 (E5)', location:'Seremban - Port Dickson' },
+  { lat:6.12, lng:102.24, count:8,  sev:'critical', state:'Kelantan',          km:'KM 275.2 (E1)', location:'Kota Bharu - Kuala Terengganu' },
+  { lat:5.33, lng:103.14, count:11, sev:'critical', state:'Terengganu',        km:'KM 112.3 (E2)', location:'Kuala Terengganu interchange' },
+  { lat:3.14, lng:101.62, count:5,  sev:'critical', state:'W.P. Kuala Lumpur', km:'KM 18.4 (E1)', location:'Kuala Lumpur urban corridor' },
+  { lat:4.77, lng:100.94, count:4,  sev:'critical', state:'Perak',             km:'KM 64.1 (Federal Rte 5)', location:'Ipoh - Kuala Kangsar' },
+  { lat:3.81, lng:103.32, count:19, sev:'high',     state:'Pahang',            km:'KM 91.5 (Route 3)', location:'Kuantan coastal route' },
+  { lat:4.24, lng:101.97, count:25, sev:'high',     state:'Pahang',            km:'KM 132.8 (E8)', location:'Central Pahang link' },
+  { lat:2.93, lng:102.44, count:29, sev:'high',     state:'Negeri Sembilan',   km:'KM 208.7 (E2)', location:'Negeri Sembilan approach' },
+  { lat:1.87, lng:103.33, count:20, sev:'high',     state:'Johor',             km:'KM 319.6 (E2)', location:'Johor central route' },
+  { lat:1.55, lng:103.77, count:15, sev:'high',     state:'Johor',             km:'KM 335.1 (E2)', location:'Johor Bahru entry' },
+  { lat:5.41, lng:100.33, count:13, sev:'medium',   state:'Pulau Pinang',      km:'KM 7.2 (E1)', location:'Penang island approach' },
+  { lat:4.60, lng:101.09, count:12, sev:'medium',   state:'Perak',             km:'KM 72.8 (E1)', location:'Ipoh northbound' },
+  { lat:3.45, lng:101.53, count:30, sev:'medium',   state:'Selangor',          km:'KM 442.0 (E1)', location:'Rawang - Kuala Lumpur' },
+  { lat:3.02, lng:101.73, count:30, sev:'medium',   state:'Selangor',          km:'KM 11.6 (E37)', location:'Kajang distributor' },
+  { lat:2.19, lng:102.25, count:36, sev:'medium',   state:'Melaka',            km:'KM 221.9 (E2)', location:'Melaka corridor' },
+  { lat:6.00, lng:102.10, count:8,  sev:'low',      state:'Kelantan',          km:'KM 188.4 (Route 3)', location:'Kelantan coastal section' },
+  { lat:3.80, lng:103.26, count:17, sev:'low',      state:'Pahang',            km:'KM 104.2 (Route 3)', location:'Kuantan bypass' },
+  { lat:1.90, lng:103.35, count:10, sev:'low',      state:'Johor',             km:'KM 292.4 (E2)', location:'Batu Pahat link' },
+  { lat:5.85, lng:102.00, count:38, sev:'low',      state:'Kelantan',          km:'KM 219.0 (Route 8)', location:'Kelantan interior route' },
+  { lat:2.72, lng:101.94, count:18, sev:'low',      state:'Negeri Sembilan',   km:'KM 19.8 (E5)', location:'Seremban - Port Dickson' },
+  { lat:5.98, lng:116.08, count:18, sev:'critical', state:'Sabah',             km:'KM 12.5 (Pan Borneo)', location:'Kota Kinabalu urban approach' },
+  { lat:5.43, lng:118.00, count:14, sev:'high',     state:'Sabah',             km:'KM 184.2 (Route 22)', location:'Sandakan east corridor' },
+  { lat:1.56, lng:110.35, count:21, sev:'high',     state:'Sarawak',           km:'KM 8.9 (Pan Borneo)', location:'Kuching - Samarahan link' },
+  { lat:3.17, lng:113.04, count:16, sev:'medium',   state:'Sarawak',           km:'KM 428.6 (Route 1)', location:'Bintulu industrial corridor' },
+  { lat:4.39, lng:113.99, count:9,  sev:'low',      state:'Sarawak',           km:'KM 612.4 (Pan Borneo)', location:'Miri northern approach' },
+  { lat:5.28, lng:115.24, count:6,  sev:'medium',   state:'W.P. Labuan',       km:'KM 4.1 (Labuan Ring Road)', location:'Labuan port connector' },
+  { lat:6.15, lng:100.37, count:12, sev:'medium',   state:'Kedah',             km:'KM 71.4 (E1)', location:'Alor Setar - Gurun section', concession:'PLUS', roadType:'expressway' },
+  { lat:6.44, lng:100.20, count:8,  sev:'low',      state:'Perlis',            km:'KM 11.8 (Route 7)', location:'Kangar urban distributor', concession:'PLUS', roadType:'federal' },
+  { lat:2.93, lng:101.69, count:3,  sev:'low',      state:'W.P. Putrajaya',    km:'KM 3.2 (Persiaran Utara)', location:'Putrajaya administrative loop', concession:'SPRINT', roadType:'district' },
 ];
 
 const DESCRIPTIONS = [
@@ -97,12 +106,13 @@ const INITIAL_STATUSES = ['open','open','acknowledged','open','open','acknowledg
 
 function enrichMarker(marker, index) {
   const id = `inc-${String(index + 1).padStart(3, '0')}`;
-  const createdAt = new Date(Date.now() - CREATED_OFFSETS_MINUTES[index] * 60 * 1000).toISOString();
+  const offsetMinutes = CREATED_OFFSETS_MINUTES[index] || (CREATED_OFFSETS_MINUTES[CREATED_OFFSETS_MINUTES.length - 1] + (index - CREATED_OFFSETS_MINUTES.length + 1) * 3600);
+  const createdAt = new Date(Date.now() - offsetMinutes * 60 * 1000).toISOString();
   const description = DESCRIPTIONS[index % DESCRIPTIONS.length];
   const owner = ASSIGNEES[index % ASSIGNEES.length];
-  const concession = CONCESSIONS[index % CONCESSIONS.length];
-  const roadType = ROAD_TYPES[index % ROAD_TYPES.length];
-  const status = INITIAL_STATUSES[index] || 'open';
+  const concession = marker.concession || CONCESSIONS[index % CONCESSIONS.length];
+  const roadType = marker.roadType || ROAD_TYPES[index % ROAD_TYPES.length];
+  const status = marker.status || INITIAL_STATUSES[index] || 'open';
 
   return {
     ...marker,
@@ -161,7 +171,7 @@ const PAYMENTS = [
   { id:'PAY-2026-1001', concession:'PLUS', amount:'RM 66.3M', date:'07 Jun 2026', status:'Released' },
 ];
 
-const STATE_DATA = [
+const STATE_BASE_DATA = [
   { state:'Johor',             incidentCount:45, openCritical:6,  openHigh:13, openMedium:17, openLow:9,  slaCompliance:88, avgResponseHrs:2.9, roadKm:628, plazaCount:19, contractorCount:7,  monthRevenue:'RM 96.4M', primaryConcession:'PLUS' },
   { state:'Kedah',             incidentCount:38, openCritical:4,  openHigh:10, openMedium:15, openLow:9,  slaCompliance:86, avgResponseHrs:3.2, roadKm:412, plazaCount:12, contractorCount:5,  monthRevenue:'RM 42.8M', primaryConcession:'PLUS' },
   { state:'Kelantan',          incidentCount:52, openCritical:8,  openHigh:15, openMedium:19, openLow:10, slaCompliance:81, avgResponseHrs:4.1, roadKm:286, plazaCount:6,  contractorCount:4,  monthRevenue:'RM 18.7M', primaryConcession:'PLUS' },
@@ -179,6 +189,47 @@ const STATE_DATA = [
   { state:'W.P. Labuan',       incidentCount:5,  openCritical:1,  openHigh:1,  openMedium:2,  openLow:1,  slaCompliance:94, avgResponseHrs:1.6, roadKm:42,  plazaCount:1,  contractorCount:1,  monthRevenue:'RM 3.4M',  primaryConcession:'LITRAK' },
   { state:'W.P. Putrajaya',    incidentCount:3,  openCritical:0,  openHigh:1,  openMedium:1,  openLow:1,  slaCompliance:94, avgResponseHrs:1.7, roadKm:36,  plazaCount:2,  contractorCount:1,  monthRevenue:'RM 5.8M',  primaryConcession:'SPRINT' },
 ];
+
+function buildStateData() {
+  return STATE_BASE_DATA.map(base => {
+    const markers = MAP_MARKERS.filter(marker => normalizeStateLookup(marker.state) === normalizeStateLookup(base.state));
+    if (!markers.length) {
+      return { ...base, incidentCount: 0, openCritical: 0, openHigh: 0, openMedium: 0, openLow: 0 };
+    }
+    const severityTotals = { critical: 0, high: 0, medium: 0, low: 0 };
+    const concessionTotals = new Map();
+    let incidentCount = 0;
+
+    markers.forEach(marker => {
+      const count = Number(marker.count) || 0;
+      incidentCount += count;
+      if (marker.status !== 'resolved' && severityTotals[marker.sev] !== undefined) {
+        severityTotals[marker.sev] += count;
+      }
+      concessionTotals.set(marker.concession, (concessionTotals.get(marker.concession) || 0) + count);
+    });
+
+    const primaryConcession = [...concessionTotals.entries()]
+      .sort((a, b) => b[1] - a[1])[0]?.[0] || base.primaryConcession;
+    const riskLoad = incidentCount ? (severityTotals.critical * 1.8 + severityTotals.high * 1.2 + severityTotals.medium * 0.7 + severityTotals.low * 0.35) / incidentCount : 0;
+    const slaCompliance = Math.max(76, Math.min(96, Math.round(96 - riskLoad * 9 - incidentCount / 18)));
+    const avgResponseHrs = Number(Math.max(1.4, Math.min(5.4, 1.5 + riskLoad * 1.8 + incidentCount / 55)).toFixed(1));
+
+    return {
+      ...base,
+      incidentCount,
+      openCritical: severityTotals.critical,
+      openHigh: severityTotals.high,
+      openMedium: severityTotals.medium,
+      openLow: severityTotals.low,
+      slaCompliance,
+      avgResponseHrs,
+      primaryConcession,
+    };
+  });
+}
+
+const STATE_DATA = buildStateData();
 
 function normalizeStateLookup(name) {
   const cleaned = String(name || '')

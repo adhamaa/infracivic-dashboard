@@ -106,6 +106,7 @@
       input.addEventListener('change', () => {
         const concessions = [...panel.querySelectorAll('[data-concession]:checked')].map(i => i.value);
         IC.setFilters({ concessions });
+        closeDropdown(dd);
       });
     });
     panel.querySelector('[data-clear]').addEventListener('click', () => {
@@ -149,6 +150,7 @@
       input.addEventListener('change', () => {
         const states = [...panel.querySelectorAll('[data-state]:checked')].map(i => i.value);
         IC.setFilters({ states });
+        closeDropdown(dd);
       });
     });
     panel.querySelectorAll('[data-region]').forEach(btn => {

@@ -16,6 +16,7 @@
   let statePopup;
   let lastStateFilterKey = '';
   let activeRouteRequest = 0;
+  let suppressStatePopupClose = false;
 
   async function initMap() {
     const el = document.getElementById('map-chart');
@@ -127,7 +128,9 @@
     if (!fit || IC.state.tab !== 'commandCentre' || (!forceFit && stateKey === lastStateFilterKey)) return;
     lastStateFilterKey = stateKey;
     if (!stateKey) {
+      suppressStatePopupClose = true;
       statePopup?.close();
+      suppressStatePopupClose = false;
       map.flyToBounds(defaultBounds, { animate: true, duration: 0.55, padding: [18, 18] });
       return;
     }
@@ -171,6 +174,7 @@
   function openStatePopup(name, latlng) {
     const detail = D.getStateDetail?.(name);
     if (!detail) return;
+    suppressStatePopupClose = true;
     statePopup = L.popup({
       className: 'state-popup-shell',
       closeButton: true,
@@ -181,9 +185,19 @@
       .setLatLng(latlng)
       .setContent(renderStatePopup(detail))
       .openOn(map);
+    suppressStatePopupClose = false;
+    statePopup.on('remove', () => clearStateFilterFromPopup(detail.state));
     setTimeout(() => {
       document.querySelector('[data-state-detail]')?.addEventListener('click', () => IC.openStateDetail?.(detail.state));
     }, 0);
+  }
+
+  function clearStateFilterFromPopup(name) {
+    if (suppressStatePopupClose) return;
+    const selected = IC.state.filters.states || [];
+    const key = normalizeStateName(name);
+    if (!selected.some(state => normalizeStateName(state) === key)) return;
+    IC.setFilters({ states: [] });
   }
 
   function renderStatePopup(detail) {
