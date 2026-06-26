@@ -103,7 +103,7 @@
     }));
     IC.charts.createChart('chart-conc', {
       data,
-      padding: { top: 14, right: 80, bottom: 12, left: 8 },
+      padding: { top: 18, right: 80, bottom: 16, left: 8 },
       series: [
         {
           type: 'bar',
