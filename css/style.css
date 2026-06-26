@@ -1889,6 +1889,14 @@ button.mini-row:hover { background: var(--g50); }
   font-weight: 600;
   letter-spacing: .3px;
 }
+.filter-context-note {
+  max-width: 760px;
+  color: rgba(255,255,255,.82);
+  font-size: 10.5px;
+  font-weight: 600;
+  line-height: 1.3;
+}
+.filter-context-note[hidden] { display: none; }
 
 /* ── Multi-select chip dropdown ───────────────────────────── */
 .t-multi {
@@ -2041,6 +2049,22 @@ button.mini-row:hover { background: var(--g50); }
   border: 1px dashed var(--g200);
   border-radius: 8px;
 }
+.empty-action {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 28px;
+  margin-top: 10px;
+  padding: 0 10px;
+  border: 1px solid var(--g200);
+  border-radius: 7px;
+  background: #fff;
+  color: var(--p700);
+  font-size: 11px;
+  font-weight: 800;
+  cursor: pointer;
+}
+.empty-action:hover { background: var(--p100); border-color: var(--p400); }
 
 /* ── Severity colour tokens ───────────────────────────────── */
 .sev-critical { --sev: #dc2626; }

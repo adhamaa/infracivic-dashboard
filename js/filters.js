@@ -30,6 +30,10 @@
       });
     });
     document.addEventListener('click', event => {
+      if (event.target.closest('[data-clear-dashboard-filters]')) {
+        clearDashboardFilters();
+        return;
+      }
       if (filterDrawer && !filterDrawer.hidden) {
         if (!filterDrawer.contains(event.target) && !filterToggle?.contains(event.target)) closeFilterDrawer();
       }
@@ -60,8 +64,12 @@
     });
     filterDrawer?.addEventListener('click', event => event.stopPropagation());
     document.getElementById('map-filter-clear')?.addEventListener('click', () => {
-      IC.setFilters({ concessions: [], states: [], status: 'all', dateRange: 'all', roadTypes: [...D.ROAD_TYPES], minCount: 0 });
+      clearDashboardFilters();
     });
+  }
+
+  function clearDashboardFilters() {
+    IC.setFilters({ concessions: [], states: [], status: 'all', dateRange: 'all', roadTypes: [...D.ROAD_TYPES], minCount: 0 });
   }
 
   function openFilterDrawer() {
@@ -365,4 +373,5 @@
   IC.getFilteredIncidents = getFilteredIncidents;
   IC.getFilteredAlerts = getFilteredAlerts;
   IC.activeFilterCount = activeFilterCount;
+  IC.clearDashboardFilters = clearDashboardFilters;
 })();

@@ -492,13 +492,26 @@ const PCI_BY_STATE = STATES.map((state, i) => {
   };
 });
 const BRIDGE_HEALTH = [
+  { name: 'Kangar Bypass Flyover',     state: 'Perlis',         score: 84, due: '18 Aug 2026', rating: 'Good' },
+  { name: 'Sungai Kedah Bridge',       state: 'Kedah',          score: 79, due: '26 Jul 2026', rating: 'Watch' },
   { name: 'Penang Bridge',            state: 'Pulau Pinang',  score: 86, due: '12 Aug 2026', rating: 'Good' },
+  { name: 'Kuala Kangsar Viaduct',     state: 'Perak',          score: 74, due: '09 Jul 2026', rating: 'Watch' },
+  { name: 'Rawang Elevated Ramp',      state: 'Selangor',       score: 81, due: '22 Sep 2026', rating: 'Good' },
+  { name: 'Duta Interchange Span',     state: 'W.P. Kuala Lumpur', score: 78, due: '30 Jul 2026', rating: 'Watch' },
   { name: 'Sultan Iskandar Bridge',   state: 'Johor',         score: 82, due: '04 Sep 2026', rating: 'Good' },
   { name: 'Putra Bridge',             state: 'W.P. Putrajaya', score: 91, due: '21 Dec 2026', rating: 'Excellent' },
   { name: 'Seri Wawasan Bridge',      state: 'W.P. Putrajaya', score: 88, due: '17 Nov 2026', rating: 'Good' },
+  { name: 'Seremban Link Overpass',    state: 'Negeri Sembilan', score: 80, due: '15 Aug 2026', rating: 'Good' },
+  { name: 'Ayer Keroh River Bridge',   state: 'Melaka',        score: 77, due: '02 Aug 2026', rating: 'Watch' },
   { name: 'Lebuhraya Pantai Timur 3', state: 'Pahang',        score: 71, due: '02 Jul 2026', rating: 'Watch' },
+  { name: 'Terengganu Coastal Span',   state: 'Terengganu',    score: 73, due: '19 Jul 2026', rating: 'Watch' },
+  { name: 'Kelantan River Crossing',   state: 'Kelantan',      score: 69, due: '08 Jul 2026', rating: 'Action' },
   { name: 'Sungai Johor Bridge',      state: 'Johor',         score: 76, due: '28 Aug 2026', rating: 'Watch' },
+  { name: 'Kota Kinabalu Coastal Flyover', state: 'Sabah',     score: 72, due: '11 Jul 2026', rating: 'Watch' },
+  { name: 'Sandakan East Link Bridge', state: 'Sabah',         score: 75, due: '04 Aug 2026', rating: 'Watch' },
   { name: 'Rajang Bridge',            state: 'Sarawak',       score: 64, due: '10 Jul 2026', rating: 'Action' },
+  { name: 'Miri Northern Viaduct',     state: 'Sarawak',       score: 70, due: '24 Jul 2026', rating: 'Watch' },
+  { name: 'Labuan Port Connector Span', state: 'W.P. Labuan',  score: 83, due: '16 Sep 2026', rating: 'Good' },
 ];
 
 // ── Sustainability tab ──
@@ -554,12 +567,17 @@ const SAFETY_INCIDENTS = [
   { month: 'Jun', minor: 3, major: 1, lti: 0 },
 ];
 const OVERTIME_HOTSPOTS = [
-  { district: 'KL Central',       hours: 412, change: 8.2 },
-  { district: 'Subang',           hours: 384, change: 5.1 },
-  { district: 'Cheras',           hours: 356, change: -1.4 },
-  { district: 'Johor Bahru',      hours: 318, change: 6.4 },
-  { district: 'Georgetown',       hours: 268, change: 2.0 },
-  { district: 'Kuantan',          hours: 224, change: -3.7 },
+  { district: 'KL Central',       region: 'Central',       hours: 412, change: 8.2 },
+  { district: 'Subang',           region: 'Central',       hours: 384, change: 5.1 },
+  { district: 'Cheras',           region: 'Central',       hours: 356, change: -1.4 },
+  { district: 'Johor Bahru',      region: 'Southern',      hours: 318, change: 6.4 },
+  { district: 'Seremban',         region: 'Southern',      hours: 286, change: 2.7 },
+  { district: 'Georgetown',       region: 'Northern',      hours: 268, change: 2.0 },
+  { district: 'Alor Setar',       region: 'Northern',      hours: 244, change: 1.6 },
+  { district: 'Kuantan',          region: 'East Coast',    hours: 224, change: -3.7 },
+  { district: 'Kota Bharu',       region: 'East Coast',    hours: 208, change: 4.1 },
+  { district: 'Kota Kinabalu',    region: 'East Malaysia', hours: 236, change: 5.8 },
+  { district: 'Kuching',          region: 'East Malaysia', hours: 228, change: 3.4 },
 ];
 
 // ── Reports tab ──

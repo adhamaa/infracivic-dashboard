@@ -32,7 +32,11 @@
   function showChartEmpty(id, message = 'No data matches current filters.') {
     IC.charts.destroyChart(id);
     const el = document.getElementById(id);
-    if (el) el.innerHTML = `<div class="chart-empty">${message}</div>`;
+    if (el) el.innerHTML = emptyState(message, 'chart-empty');
+  }
+
+  function emptyState(message, klass = 'rp-empty') {
+    return `<div class="${klass}"><span>${message}</span><button class="empty-action" type="button" data-clear-dashboard-filters>Clear filters</button></div>`;
   }
 
   // Period scale: baseline of mock data ~= last 90 days.
@@ -43,6 +47,17 @@
 
   function filteredIncidents() {
     return IC.getFilteredIncidents ? IC.getFilteredIncidents() : [];
+  }
+
+  function selectedRegions() {
+    const states = IC.state.filters.states || [];
+    if (!states.length) return [];
+    const regions = new Set();
+    states.forEach(state => {
+      const group = D.STATE_REGIONS.find(item => (item.states || []).includes(state));
+      if (group) regions.add(group.region);
+    });
+    return [...regions];
   }
 
   function incidentHourlyData() {
@@ -104,7 +119,7 @@
           <div class="inc-feed-meta"><span class="inc-tag">${item.concession}</span><span class="inc-tag sev-${item.sev}">${item.sev.toUpperCase()}</span></div>
         </div>
       </div>
-    `).join('') || '<div class="rp-empty">No incidents match current filters.</div>';
+    `).join('') || emptyState('No incidents match current filters.');
     el.onclick = event => {
       const row = event.target.closest('[data-incident-id]');
       if (!row || !row.dataset.incidentId) return;
@@ -127,7 +142,7 @@
           <span>${row.load}%</span>
         </div>
       </div>
-    `).join('') || '<div class="rp-empty">No crews on this concession.</div>';
+    `).join('') || emptyState('No crews match current filters.');
     el.onclick = event => {
       const row = event.target.closest('[data-crew]');
       if (!row) return;
@@ -158,7 +173,7 @@
           <div><strong>${item.kmLabel || item.description?.slice(0, 28) || 'Incident'}</strong><span>${item.concession || ''}</span></div>
           <span class="breach-tag">${item.sev.toUpperCase()}</span>
         </div>
-      `).join('') || '<div class="rp-empty">No high-severity items.</div>';
+      `).join('') || emptyState('No high-severity items match current filters.');
       breach.onclick = event => {
         const row = event.target.closest('[data-incident-id]');
         if (!row || !row.dataset.incidentId) return;
@@ -208,7 +223,7 @@
           <span class="plaza-change ${row.change >= 0 ? 'up' : 'down'}">${row.change >= 0 ? '▲' : '▼'} ${Math.abs(row.change).toFixed(1)}%</span>
         </div>
       </div>
-    `).join('') || '<div class="rp-empty">No plazas match filters.</div>';
+    `).join('') || emptyState('No plazas match current filters.');
     el.onclick = event => {
       const row = event.target.closest('[data-concession]');
       if (!row) return;
@@ -229,7 +244,7 @@
         </div>
         <div class="hotspot-jam" style="--jam:${row.jam * 10}%"><span></span><em>${row.jam.toFixed(1)}</em></div>
       </div>
-    `).join('') || '<div class="rp-empty">No hotspots in filtered states.</div>';
+    `).join('') || emptyState('No hotspots match current filters.');
     el.onclick = event => {
       const row = event.target.closest('[data-state]');
       if (!row) return;
@@ -320,7 +335,7 @@
               <td>${row.due}</td>
               <td><span class="rating-tag rating-${row.rating.toLowerCase()}">${row.rating}</span></td>
             </tr>
-          `).join('') || '<tr><td colspan="5" class="data-empty">No bridges match filters.</td></tr>'}
+          `).join('') || `<tr><td colspan="5" class="data-empty">No bridges match current filters. <button class="empty-action" type="button" data-clear-dashboard-filters>Clear filters</button></td></tr>`}
         </tbody>
       </table>
     `;
@@ -449,10 +464,19 @@
 
   // ───────────────────────── COMPLIANCE ─────────────────────────
   function renderComplianceTab() {
+    renderComplianceContext();
     renderObligationsChart();
     renderExpiryPipeline();
     renderObligationCalendar();
     renderComplianceRail();
+  }
+
+  function renderComplianceContext() {
+    const el = document.getElementById('cmp-filter-context');
+    if (!el) return;
+    const states = IC.state.filters.states || [];
+    el.hidden = !states.length;
+    el.textContent = states.length ? `State filter active: ${states.join(', ')}. Compliance records are concession-led, so this view keeps related obligations and upcoming submissions in scope.` : '';
   }
 
   function renderObligationsChart() {
@@ -508,7 +532,7 @@
         </div>
         <span class="cal-status cal-${row.status.toLowerCase()}">${row.status}</span>
       </div>
-    `).join('') || '<div class="rp-empty">No items match filters.</div>';
+    `).join('') || emptyState('No items match current filters.');
     el.onclick = event => {
       const r = event.target.closest('[data-cal-index]');
       if (!r) return;
@@ -557,7 +581,9 @@
   function renderUtilGauges() {
     const el = document.getElementById('wf-util-gauges');
     if (!el) return;
-    el.innerHTML = D.CREW_UTILISATION.map(row => {
+    const regions = selectedRegions();
+    const rows = regions.length ? D.CREW_UTILISATION.filter(row => regions.includes(row.region)) : D.CREW_UTILISATION;
+    el.innerHTML = rows.map(row => {
       const status = row.utilisation > 90 ? 'over' : row.utilisation < 70 ? 'under' : 'ok';
       return `
         <div class="util-gauge util-${status}" data-region="${row.region}" role="button" tabindex="0">
@@ -582,8 +608,16 @@
   function renderSafetyChart() {
     if (!document.getElementById('wf-safety-chart')) return;
     IC.charts.destroyChart('wf-safety-chart');
+    const regions = selectedRegions();
+    const regionScale = regions.length ? Math.max(0.28, regions.length / D.CREW_UTILISATION.length) : 1;
+    const data = D.SAFETY_INCIDENTS.map(row => ({
+      ...row,
+      minor: Math.max(0, Math.round(row.minor * regionScale)),
+      major: Math.max(0, Math.round(row.major * regionScale)),
+      lti: Math.max(0, Math.round(row.lti * regionScale)),
+    }));
     IC.charts.createChart('wf-safety-chart', {
-      data: D.SAFETY_INCIDENTS,
+      data,
       padding: { top: 12, right: 16, bottom: 30, left: 32 },
       series: [
         { type: 'bar', xKey: 'month', yKey: 'minor', yName: 'Minor', stacked: true, fill: '#fbbf24', cornerRadius: 3 },
@@ -601,8 +635,11 @@
   function renderOvertimeChart() {
     if (!document.getElementById('wf-ot-chart')) return;
     IC.charts.destroyChart('wf-ot-chart');
+    const regions = selectedRegions();
+    const data = regions.length ? D.OVERTIME_HOTSPOTS.filter(row => regions.includes(row.region)) : D.OVERTIME_HOTSPOTS;
+    if (!data.length) { showChartEmpty('wf-ot-chart', 'No workforce hotspots match current filters.'); return; }
     IC.charts.createChart('wf-ot-chart', {
-      data: D.OVERTIME_HOTSPOTS,
+      data,
       padding: { top: 12, right: 16, bottom: 30, left: 80 },
       series: [{
         type: 'bar',
@@ -625,9 +662,12 @@
   function renderWorkforceRail() {
     const trio = document.getElementById('wf-kpi-trio');
     if (trio) {
-      const totalCrews = D.CREW_UTILISATION.reduce((s, r) => s + r.crews, 0);
-      const avgUtil = D.CREW_UTILISATION.reduce((s, r) => s + r.utilisation, 0) / D.CREW_UTILISATION.length;
-      const ltiYtd = Math.round(D.SAFETY_INCIDENTS.reduce((s, r) => s + r.lti, 0) * (periodScale() / 4));
+      const regions = selectedRegions();
+      const rows = regions.length ? D.CREW_UTILISATION.filter(row => regions.includes(row.region)) : D.CREW_UTILISATION;
+      const totalCrews = rows.reduce((s, r) => s + r.crews, 0);
+      const avgUtil = rows.length ? rows.reduce((s, r) => s + r.utilisation, 0) / rows.length : 0;
+      const ltiBase = D.SAFETY_INCIDENTS.reduce((s, r) => s + r.lti, 0);
+      const ltiYtd = Math.round(ltiBase * (rows.length / D.CREW_UTILISATION.length) * (periodScale() / 4));
       trio.innerHTML = kpiTrio([
         { lbl: 'Total Crews',            val: totalCrews,               tone: 'blue',   ico: 'mdi:account-group' },
         { lbl: 'Avg Util',               val: `${avgUtil.toFixed(0)}%`, tone: 'orange', ico: 'mdi:gauge' },
@@ -636,10 +676,12 @@
     }
     const alerts = document.getElementById('wf-safety-alerts');
     if (alerts) {
+      const regions = selectedRegions();
+      const suffix = regions.length ? ` · ${regions.join(', ')}` : '';
       const recent = D.SAFETY_INCIDENTS.slice(-3).reverse();
       alerts.innerHTML = recent.map(m => `
         <div class="breach-row sev-${m.lti ? 'critical' : m.major ? 'high' : 'medium'}">
-          <div><strong>${m.month} 2026</strong><span>${m.minor + m.major + m.lti} reports · ${m.lti} LTI</span></div>
+          <div><strong>${m.month} 2026</strong><span>${m.minor + m.major + m.lti} reports · ${m.lti} LTI${suffix}</span></div>
           <span class="breach-tag">${m.lti ? 'LTI' : m.major ? 'MAJOR' : 'MINOR'}</span>
         </div>
       `).join('');

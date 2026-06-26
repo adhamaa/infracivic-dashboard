@@ -13,6 +13,7 @@
 
   function renderFinancialAnalytics() {
     if (IC.state.tab !== 'financial') return;
+    renderFinancialContext();
     renderClaimsAging();
     renderPaymentVelocity();
     renderOpenClaims();
@@ -22,6 +23,14 @@
 
   function concessionItems(items) {
     return IC.charts.filteredByConcession(items);
+  }
+
+  function renderFinancialContext() {
+    const el = document.getElementById('fin-filter-context');
+    if (!el) return;
+    const states = IC.state.filters.states || [];
+    el.hidden = !states.length;
+    el.textContent = states.length ? `State filter active: ${states.join(', ')}. Finance values remain concession-led and are shown through related concession coverage, claims, and payments.` : '';
   }
 
   function renderClaimsAging() {
