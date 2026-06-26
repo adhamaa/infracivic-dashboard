@@ -4,9 +4,12 @@
   const IC = window.IC = window.IC || {};
   const D = window.IC_DATA;
   let popover;
+  let filterDrawer;
+  let filterToggle;
   const dropdowns = new Map();
 
   function initFilters() {
+    bindMapFilterDrawer();
     buildPopover();
     buildConcessionDropdown();
     buildStateDropdown();
@@ -27,6 +30,9 @@
       });
     });
     document.addEventListener('click', event => {
+      if (filterDrawer && !filterDrawer.hidden) {
+        if (!filterDrawer.contains(event.target) && !filterToggle?.contains(event.target)) closeFilterDrawer();
+      }
       if (popover && !popover.hidden) {
         if (!popover.contains(event.target) && !event.target.closest('#advanced-filter-btn')) closePopover();
       }
@@ -37,11 +43,39 @@
     });
     document.addEventListener('keydown', event => {
       if (event.key !== 'Escape') return;
+      closeFilterDrawer();
       closePopover();
       dropdowns.forEach(closeDropdown);
     });
     IC.subscribe(syncFilterControls);
     syncFilterControls();
+  }
+
+  function bindMapFilterDrawer() {
+    filterDrawer = document.getElementById('map-filter-drawer');
+    filterToggle = document.getElementById('map-filter-toggle');
+    filterToggle?.addEventListener('click', event => {
+      event.stopPropagation();
+      filterDrawer?.hidden ? openFilterDrawer() : closeFilterDrawer();
+    });
+    filterDrawer?.addEventListener('click', event => event.stopPropagation());
+    document.getElementById('map-filter-clear')?.addEventListener('click', () => {
+      IC.setFilters({ concessions: [], states: [], status: 'all', dateRange: 'all', roadTypes: [...D.ROAD_TYPES], minCount: 0 });
+    });
+  }
+
+  function openFilterDrawer() {
+    if (!filterDrawer) return;
+    filterDrawer.hidden = false;
+    filterToggle?.setAttribute('aria-expanded', 'true');
+  }
+
+  function closeFilterDrawer() {
+    if (!filterDrawer) return;
+    filterDrawer.hidden = true;
+    filterToggle?.setAttribute('aria-expanded', 'false');
+    closePopover();
+    dropdowns.forEach(closeDropdown);
   }
 
   function buildConcessionDropdown() {
@@ -255,7 +289,26 @@
     }
     const count = activeFilterCount();
     const label = document.querySelector('#advanced-filter-btn .filter-label');
-    if (label) label.textContent = count ? `Filters · ${count}` : 'Filters';
+    if (label) label.textContent = count ? `More filters · ${count}` : 'More filters';
+    const drawerCount = document.getElementById('map-filter-count');
+    if (drawerCount) {
+      drawerCount.hidden = count === 0;
+      drawerCount.textContent = String(count);
+    }
+    const summary = document.getElementById('map-filter-summary');
+    if (summary) summary.textContent = mapFilterSummary(filters, count);
+  }
+
+  function mapFilterSummary(filters, count) {
+    if (!count) return 'All incidents';
+    const parts = [];
+    if ((filters.concessions || []).length) parts.push(summarise(filters.concessions, '', 'concession', 'concessions'));
+    if ((filters.states || []).length) parts.push(summarise(filters.states, '', 'state', 'states'));
+    if (filters.status !== 'all') parts.push(D.STATUS_LABELS[filters.status] || IC.cap(filters.status));
+    if (filters.roadTypes.length !== D.ROAD_TYPES.length) parts.push(`${filters.roadTypes.length} road type${filters.roadTypes.length === 1 ? '' : 's'}`);
+    if (filters.dateRange !== 'all') parts.push(filters.dateRange);
+    if (filters.minCount > 0) parts.push(`min ${filters.minCount}`);
+    return parts.slice(0, 3).join(' · ');
   }
 
   function activeFilterCount() {

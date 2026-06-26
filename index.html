@@ -130,25 +130,48 @@
             </div>
           </div>
           <div class="tb-right">
-            <button type="button" class="t-multi" id="concession-filter" aria-haspopup="listbox" aria-expanded="false" aria-label="Filter by concession">
-              <iconify-icon icon="mdi:office-building-outline"></iconify-icon>
-              <span class="ms-label">All Concessions</span>
-              <iconify-icon class="ms-caret" icon="mdi:chevron-down"></iconify-icon>
+            <button class="map-filter-toggle" id="map-filter-toggle" type="button" aria-expanded="false" aria-controls="map-filter-drawer">
+              <iconify-icon icon="mdi:tune-variant"></iconify-icon>
+              <span>Map filters</span>
+              <strong id="map-filter-count" hidden>0</strong>
             </button>
-            <button type="button" class="t-multi" id="state-filter" aria-haspopup="listbox" aria-expanded="false" aria-label="Filter by state">
-              <iconify-icon icon="mdi:map-marker-outline"></iconify-icon>
-              <span class="ms-label">All States</span>
-              <iconify-icon class="ms-caret" icon="mdi:chevron-down"></iconify-icon>
-            </button>
-            <select class="t-sel" id="status-filter" aria-label="Filter by status">
-              <option value="all">All Status</option><option value="critical">Critical</option>
-              <option value="high">High</option><option value="medium">Medium</option><option value="low">Low</option>
-              <option value="completed">Completed</option>
-            </select>
-            <button class="t-filter" id="advanced-filter-btn" type="button" aria-expanded="false">
-              <iconify-icon icon="mdi:filter-variant"></iconify-icon>
-              <span class="filter-label">Filters</span>
-            </button>
+            <div class="map-filter-drawer" id="map-filter-drawer" hidden>
+              <div class="map-filter-head">
+                <div>
+                  <strong>Map focus</strong>
+                  <span id="map-filter-summary">All incidents</span>
+                </div>
+                <button type="button" id="map-filter-clear">Clear</button>
+              </div>
+              <div class="map-filter-field">
+                <small>Concession</small>
+                <button type="button" class="t-multi" id="concession-filter" aria-haspopup="listbox" aria-expanded="false" aria-label="Filter by concession">
+                  <iconify-icon icon="mdi:office-building-outline"></iconify-icon>
+                  <span class="ms-label">All Concessions</span>
+                  <iconify-icon class="ms-caret" icon="mdi:chevron-down"></iconify-icon>
+                </button>
+              </div>
+              <div class="map-filter-field">
+                <small>State</small>
+                <button type="button" class="t-multi" id="state-filter" aria-haspopup="listbox" aria-expanded="false" aria-label="Filter by state">
+                  <iconify-icon icon="mdi:map-marker-outline"></iconify-icon>
+                  <span class="ms-label">All States</span>
+                  <iconify-icon class="ms-caret" icon="mdi:chevron-down"></iconify-icon>
+                </button>
+              </div>
+              <div class="map-filter-field">
+                <small>Status</small>
+                <select class="t-sel" id="status-filter" aria-label="Filter by status">
+                  <option value="all">All Status</option><option value="critical">Critical</option>
+                  <option value="high">High</option><option value="medium">Medium</option><option value="low">Low</option>
+                  <option value="completed">Completed</option>
+                </select>
+              </div>
+              <button class="t-filter" id="advanced-filter-btn" type="button" aria-expanded="false">
+                <iconify-icon icon="mdi:filter-variant"></iconify-icon>
+                <span class="filter-label">More filters</span>
+              </button>
+            </div>
           </div>
         </div>
 
