@@ -235,6 +235,7 @@
         stroke: '#ffffff',
         strokeWidth: 1.4,
         tooltip: {
+          range: 'exact',
           renderer: params => ({
             title: params.datum.name,
             content: `${params.datum.concession} · ${params.datum.jobs} jobs · SLA ${params.datum.sla}% · ${params.datum.rework.toFixed(1)}% rework`,

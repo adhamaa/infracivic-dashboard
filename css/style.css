@@ -295,6 +295,10 @@ iconify-icon {
   overflow: hidden;
 }
 
+.ag-chart .ag-chart-tooltip.ag-chart-tooltip-hidden {
+  display: none !important;
+}
+
 .ag-chart.compact { min-height: 150px; }
 .ag-chart.mini { height: 154px; min-height: 154px; padding: 8px; }
 .ag-chart.bubble-card { height: 240px; min-height: 240px; padding: 6px; }
