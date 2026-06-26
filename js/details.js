@@ -142,7 +142,117 @@
     IC.toast('Incident resolved', 'success');
   }
 
+  function openBridgeDetail(name) {
+    const bridge = D.BRIDGE_HEALTH.find(item => item.name === name);
+    if (!bridge) return;
+    const ratingClass = bridge.rating.toLowerCase();
+    IC.openModal({
+      title: bridge.name,
+      body: `
+        <div class="detail-grid">
+          <div>
+            <span class="sev-pill ${bridge.score >= 80 ? 'completed' : bridge.score >= 70 ? 'medium' : 'critical'}">Score ${bridge.score}</span>
+            <h3>${bridge.state} structural asset</h3>
+            <p class="detail-meta">Rating <strong class="rating-${ratingClass}">${bridge.rating}</strong> · Next inspection ${bridge.due}</p>
+          </div>
+          <div class="detail-owner">
+            <span>Rating</span>
+            <strong>${bridge.rating}</strong>
+          </div>
+        </div>
+        <div class="timeline">
+          <div class="tl-item"><span>Score</span><p>Composite health index ${bridge.score} based on most recent inspection.</p></div>
+          <div class="tl-item"><span>Due</span><p>Next scheduled inspection ${bridge.due}.</p></div>
+          <div class="tl-item"><span>Recommendation</span><p>${bridge.score < 70 ? 'Schedule remedial works and reduce posted load.' : bridge.score < 80 ? 'Monitor and re-inspect within cycle.' : 'Healthy — keep on standard cycle.'}</p></div>
+        </div>
+      `,
+    });
+  }
+
+  function openObligationDetail(item) {
+    if (!item) return;
+    const statusClass = (item.status || '').toLowerCase();
+    IC.openModal({
+      title: item.item,
+      body: `
+        <div class="detail-grid">
+          <div>
+            <span class="sev-pill ${statusClass === 'due' ? 'critical' : statusClass === 'scheduled' ? 'medium' : 'completed'}">${item.status}</span>
+            <h3>${item.concession} compliance obligation</h3>
+            <p class="detail-meta">Target date ${item.date}</p>
+          </div>
+          <div class="detail-owner">
+            <span>Status</span>
+            <strong>${item.status}</strong>
+          </div>
+        </div>
+        <div class="timeline">
+          <div class="tl-item"><span>Owner</span><p>${item.concession} compliance team.</p></div>
+          <div class="tl-item"><span>Date</span><p>Required by ${item.date}.</p></div>
+          <div class="tl-item"><span>Action</span><p>${statusClass === 'due' ? 'Awaiting submission — escalate to ops lead.' : statusClass === 'scheduled' ? 'On track per current schedule.' : 'In planning phase; deliverables being scoped.'}</p></div>
+        </div>
+      `,
+    });
+  }
+
+  function openRegionDetail(name) {
+    const region = D.CREW_UTILISATION.find(item => item.region === name);
+    if (!region) return;
+    const status = region.utilisation > 90 ? 'over' : region.utilisation < 70 ? 'under' : 'ok';
+    const statusText = status === 'over' ? 'Over-utilised' : status === 'under' ? 'Under-utilised' : 'Healthy load';
+    IC.openModal({
+      title: `${region.region} crews`,
+      body: `
+        <div class="detail-grid">
+          <div>
+            <span class="sev-pill ${status === 'over' ? 'critical' : status === 'under' ? 'medium' : 'completed'}">${region.utilisation}% utilisation</span>
+            <h3>${region.crews} crews deployed</h3>
+            <p class="detail-meta">${statusText} · ${region.overtime} overtime hours this period</p>
+          </div>
+          <div class="detail-owner">
+            <span>Status</span>
+            <strong>${statusText}</strong>
+          </div>
+        </div>
+        <div class="timeline">
+          <div class="tl-item"><span>Capacity</span><p>${region.crews} crews currently rostered across the region.</p></div>
+          <div class="tl-item"><span>Overtime</span><p>${region.overtime} OT hours recorded — ${region.overtime > 100 ? 'review staffing balance.' : 'within healthy band.'}</p></div>
+          <div class="tl-item"><span>Recommendation</span><p>${status === 'over' ? 'Redistribute work or onboard additional crew.' : status === 'under' ? 'Capacity available for redeployment.' : 'No action required.'}</p></div>
+        </div>
+      `,
+    });
+  }
+
+  function openExpiryDetail(bucket) {
+    const row = D.EXPIRY_PIPELINE.find(item => item.bucket === bucket);
+    if (!row) return;
+    IC.openModal({
+      title: `Expiring ${row.bucket}`,
+      body: `
+        <div class="detail-grid">
+          <div>
+            <span class="sev-pill ${row.tone === 'critical' ? 'critical' : row.tone === 'high' ? 'medium' : 'completed'}">${row.count} items</span>
+            <h3>${row.kind}</h3>
+            <p class="detail-meta">Bucket: ${row.bucket}</p>
+          </div>
+          <div class="detail-owner">
+            <span>Severity</span>
+            <strong>${row.tone.toUpperCase()}</strong>
+          </div>
+        </div>
+        <div class="timeline">
+          <div class="tl-item"><span>Volume</span><p>${row.count} ${row.kind.toLowerCase()} fall within this expiry window.</p></div>
+          <div class="tl-item"><span>Risk</span><p>${row.tone === 'critical' ? 'Immediate escalation — items expire inside the next week.' : row.tone === 'high' ? 'Plan submissions this fortnight to stay ahead.' : 'Track during normal monthly review.'}</p></div>
+        </div>
+      `,
+    });
+  }
+
   IC.openIncidentDetail = openIncidentDetail;
   IC.openContractorDetail = openContractorDetail;
   IC.openClaimDetail = openClaimDetail;
+  IC.openBridgeDetail = openBridgeDetail;
+  IC.openObligationDetail = openObligationDetail;
+  IC.openRegionDetail = openRegionDetail;
+  IC.openExpiryDetail = openExpiryDetail;
 })();

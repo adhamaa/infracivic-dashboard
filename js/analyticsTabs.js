@@ -29,6 +29,18 @@
     return getComputedStyle(document.getElementById('app')).getPropertyValue('--tab-primary').trim() || '#7b3aed';
   }
 
+  function showChartEmpty(id, message = 'No data matches current filters.') {
+    IC.charts.destroyChart(id);
+    const el = document.getElementById(id);
+    if (el) el.innerHTML = `<div class="chart-empty">${message}</div>`;
+  }
+
+  // Period scale: baseline of mock data ~= last 90 days.
+  const PERIOD_SCALE = { '7d': 0.08, '30d': 0.33, '90d': 1, mtd: 0.33, qtd: 1, ytd: 4 };
+  const PERIOD_SHORT = { '7d': '7d', '30d': '30d', '90d': '90d', mtd: 'MTD', qtd: 'QTD', ytd: 'YTD' };
+  function periodScale() { return PERIOD_SCALE[IC.state.filters.period] ?? 1; }
+  function periodShort() { return PERIOD_SHORT[IC.state.filters.period] || '90d'; }
+
   // ───────────────────────── INCIDENTS ─────────────────────────
   function renderIncidentsTab() {
     renderIncidentHourly();
@@ -61,7 +73,7 @@
     if (!el) return;
     const items = (IC.getFilteredAlerts ? IC.getFilteredAlerts() : D.ALERTS).slice(0, 8);
     el.innerHTML = items.map(item => `
-      <div class="inc-feed-row sev-${item.sev}">
+      <div class="inc-feed-row sev-${item.sev}" data-incident-id="${item.markerId || ''}" role="button" tabindex="0">
         <span class="inc-pulse"></span>
         <div class="inc-feed-body">
           <div class="inc-feed-top"><strong>${item.km}</strong><span>${item.time}</span></div>
@@ -70,6 +82,11 @@
         </div>
       </div>
     `).join('') || '<div class="rp-empty">No incidents match current filters.</div>';
+    el.onclick = event => {
+      const row = event.target.closest('[data-incident-id]');
+      if (!row || !row.dataset.incidentId) return;
+      IC.openIncidentDetail?.(row.dataset.incidentId);
+    };
   }
 
   function renderIncidentDispatch() {
@@ -77,7 +94,7 @@
     if (!el) return;
     const rows = IC.charts.filteredByConcession(D.INCIDENT_DISPATCH);
     el.innerHTML = rows.map(row => `
-      <div class="dispatch-row">
+      <div class="dispatch-row" data-crew="${row.crew}" role="button" tabindex="0">
         <div class="dispatch-info">
           <strong>${row.crew}</strong>
           <span>${row.concession} · ETA ${row.eta}</span>
@@ -88,6 +105,11 @@
         </div>
       </div>
     `).join('') || '<div class="rp-empty">No crews on this concession.</div>';
+    el.onclick = event => {
+      const row = event.target.closest('[data-crew]');
+      if (!row) return;
+      IC.toast?.(`${row.dataset.crew} routed`, 'info');
+    };
   }
 
   function renderIncidentRail() {
@@ -109,11 +131,16 @@
         .filter(i => i.status !== 'resolved' && (i.sev === 'critical' || i.sev === 'high'))
         .slice(0, 4);
       breach.innerHTML = rows.map(item => `
-        <div class="breach-row sev-${item.sev}">
+        <div class="breach-row sev-${item.sev}" data-incident-id="${item.id}" role="button" tabindex="0">
           <div><strong>${item.kmLabel || item.description?.slice(0, 28) || 'Incident'}</strong><span>${item.concession || ''}</span></div>
           <span class="breach-tag">${item.sev.toUpperCase()}</span>
         </div>
       `).join('') || '<div class="rp-empty">No high-severity items.</div>';
+      breach.onclick = event => {
+        const row = event.target.closest('[data-incident-id]');
+        if (!row || !row.dataset.incidentId) return;
+        IC.openIncidentDetail?.(row.dataset.incidentId);
+      };
     }
   }
 
@@ -148,7 +175,7 @@
     if (!el) return;
     const rows = IC.charts.filteredByState(IC.charts.filteredByConcession(D.TOLL_PLAZAS)).slice(0, 6);
     el.innerHTML = rows.map(row => `
-      <div class="plaza-row">
+      <div class="plaza-row" data-concession="${row.concession}" data-state="${row.state}" role="button" tabindex="0">
         <div class="plaza-info">
           <strong>${row.plaza}</strong>
           <span>${row.concession} · ${row.state}</span>
@@ -159,6 +186,11 @@
         </div>
       </div>
     `).join('') || '<div class="rp-empty">No plazas match filters.</div>';
+    el.onclick = event => {
+      const row = event.target.closest('[data-concession]');
+      if (!row) return;
+      IC.showCommandCentreList?.({ concessions: [row.dataset.concession], states: [row.dataset.state] });
+    };
   }
 
   function renderHotspots() {
@@ -166,7 +198,7 @@
     if (!el) return;
     const rows = IC.charts.filteredByState(D.CONGESTION_HOTSPOTS).slice(0, 6);
     el.innerHTML = rows.map((row, i) => `
-      <div class="hotspot-row">
+      <div class="hotspot-row" data-state="${row.state}" role="button" tabindex="0">
         <span class="hotspot-rank">${i + 1}</span>
         <div class="hotspot-info">
           <strong>${row.corridor}</strong>
@@ -175,6 +207,11 @@
         <div class="hotspot-jam" style="--jam:${row.jam * 10}%"><span></span><em>${row.jam.toFixed(1)}</em></div>
       </div>
     `).join('') || '<div class="rp-empty">No hotspots in filtered states.</div>';
+    el.onclick = event => {
+      const row = event.target.closest('[data-state]');
+      if (!row) return;
+      IC.showCommandCentreList?.({ states: [row.dataset.state] });
+    };
   }
 
   function renderTrafficRail() {
@@ -192,6 +229,7 @@
     if (document.getElementById('traf-revenue-chart')) {
       IC.charts.destroyChart('traf-revenue-chart');
       const plazas = IC.charts.filteredByState(IC.charts.filteredByConcession(D.TOLL_PLAZAS)).slice(0, 6);
+      if (!plazas.length) { showChartEmpty('traf-revenue-chart', 'No plazas to chart.'); return; }
       IC.charts.createChart('traf-revenue-chart', {
         data: plazas,
         padding: { top: 6, right: 12, bottom: 30, left: 32 },
@@ -216,6 +254,7 @@
     if (!document.getElementById('asset-pci-chart')) return;
     IC.charts.destroyChart('asset-pci-chart');
     const filtered = IC.charts.filteredByState(D.PCI_BY_STATE);
+    if (!filtered.length) { showChartEmpty('asset-pci-chart', 'No states match the filter.'); return; }
     const data = filtered.map(item => ({
       ...item,
       fill: item.pci >= 80 ? '#16a34a' : item.pci >= 70 ? '#d97706' : '#dc2626',
@@ -231,6 +270,8 @@
         fill: '#2563eb',
         itemStyler: ({ datum }) => ({ fill: datum.fill, stroke: datum.fill }),
         tooltip: { renderer: ({ datum }) => ({ title: datum.state, content: `PCI ${datum.pci} · trend ${datum.trend > 0 ? '+' : ''}${datum.trend.toFixed(1)}` }) },
+        listeners: { nodeClick: ({ datum }) => IC.showCommandCentreList?.({ states: [datum.state] }) },
+        cursor: 'pointer',
       }],
       axes: [
         { type: 'number', position: 'left', min: 50, max: 100, label: { fontSize: 10, color: '#475569' }, title: { text: 'PCI', fontSize: 11 } },
@@ -249,7 +290,7 @@
         <thead><tr><th>Bridge</th><th>State</th><th>Score</th><th>Next inspection</th><th>Rating</th></tr></thead>
         <tbody>
           ${rows.map(row => `
-            <tr>
+            <tr data-bridge="${row.name}" role="button" tabindex="0">
               <td><strong>${row.name}</strong></td>
               <td>${row.state}</td>
               <td><span class="score-pill score-${row.rating.toLowerCase()}">${row.score}</span></td>
@@ -260,6 +301,11 @@
         </tbody>
       </table>
     `;
+    el.onclick = event => {
+      const tr = event.target.closest('[data-bridge]');
+      if (!tr) return;
+      IC.openBridgeDetail?.(tr.dataset.bridge);
+    };
   }
 
   function renderAssetRail() {
@@ -268,16 +314,17 @@
       const pci = IC.charts.filteredByState(D.PCI_BY_STATE);
       const avg = pci.length ? pci.reduce((sum, p) => sum + p.pci, 0) / pci.length : 0;
       const watch = pci.filter(p => p.pci < 75).length;
-      const inspections = pci.reduce((sum, p) => sum + p.inspections, 0);
+      const inspections = Math.round(pci.reduce((sum, p) => sum + p.inspections, 0) * periodScale());
       trio.innerHTML = kpiTrio([
-        { lbl: 'Avg PCI',          val: avg.toFixed(1),  tone: 'blue',   ico: 'mdi:road-variant' },
-        { lbl: 'States on watch',  val: watch,            tone: 'orange', ico: 'mdi:eye-outline' },
-        { lbl: 'Inspections YTD',  val: inspections,      tone: 'green',  ico: 'mdi:clipboard-check' },
+        { lbl: 'Avg PCI',                       val: avg.toFixed(1),  tone: 'blue',   ico: 'mdi:road-variant' },
+        { lbl: 'States on watch',               val: watch,            tone: 'orange', ico: 'mdi:eye-outline' },
+        { lbl: `Inspections ${periodShort()}`,  val: inspections,      tone: 'green',  ico: 'mdi:clipboard-check' },
       ]);
     }
     if (document.getElementById('asset-rul-chart')) {
       IC.charts.destroyChart('asset-rul-chart');
       const data = IC.charts.filteredByState(D.PCI_BY_STATE).slice(0, 8);
+      if (!data.length) { showChartEmpty('asset-rul-chart', 'No states to chart.'); return; }
       IC.charts.createChart('asset-rul-chart', {
         data,
         padding: { top: 6, right: 12, bottom: 36, left: 30 },
@@ -303,6 +350,7 @@
     if (!document.getElementById('sus-co2-chart')) return;
     IC.charts.destroyChart('sus-co2-chart');
     const data = IC.charts.filteredByConcession(D.CO2_BY_CONCESSION);
+    if (!data.length) { showChartEmpty('sus-co2-chart', 'No concessions match the filter.'); return; }
     IC.charts.createChart('sus-co2-chart', {
       data,
       padding: { top: 14, right: 24, bottom: 36, left: 44 },
@@ -365,13 +413,14 @@
     const trio = document.getElementById('sus-kpi-trio');
     if (!trio) return;
     const data = IC.charts.filteredByConcession(D.CO2_BY_CONCESSION);
-    const reduced = data.reduce((sum, c) => sum + c.reduced, 0);
-    const target  = data.reduce((sum, c) => sum + c.target, 0);
+    const scale = periodScale();
+    const reduced = Math.round(data.reduce((sum, c) => sum + c.reduced, 0) * scale);
+    const target  = Math.round(data.reduce((sum, c) => sum + c.target, 0) * scale);
     const pct = target ? Math.round((reduced / target) * 100) : 0;
     trio.innerHTML = kpiTrio([
-      { lbl: 'CO₂ Reduced',     val: `${reduced}t`,  tone: 'green',  ico: 'mdi:leaf' },
-      { lbl: 'Target Progress', val: `${pct}%`,      tone: 'blue',   ico: 'mdi:target' },
-      { lbl: 'Renewable Mix',   val: '72%',          tone: 'orange', ico: 'mdi:solar-power' },
+      { lbl: `CO₂ Reduced ${periodShort()}`, val: `${reduced}t`,  tone: 'green',  ico: 'mdi:leaf' },
+      { lbl: 'Target Progress',              val: `${pct}%`,      tone: 'blue',   ico: 'mdi:target' },
+      { lbl: 'Renewable Mix',                val: '72%',          tone: 'orange', ico: 'mdi:solar-power' },
     ]);
   }
 
@@ -387,6 +436,7 @@
     if (!document.getElementById('cmp-obligations-chart')) return;
     IC.charts.destroyChart('cmp-obligations-chart');
     const data = IC.charts.filteredByConcession(D.COMPLIANCE_OBLIGATIONS);
+    if (!data.length) { showChartEmpty('cmp-obligations-chart', 'No concessions match the filter.'); return; }
     IC.charts.createChart('cmp-obligations-chart', {
       data,
       padding: { top: 14, right: 18, bottom: 36, left: 42 },
@@ -407,7 +457,7 @@
     const el = document.getElementById('cmp-expiry-pipeline');
     if (!el) return;
     el.innerHTML = D.EXPIRY_PIPELINE.map((row, i) => `
-      <div class="expiry-step expiry-${row.tone}" style="--step:${i + 1}">
+      <div class="expiry-step expiry-${row.tone}" data-bucket="${row.bucket}" role="button" tabindex="0" style="--step:${i + 1}">
         <div class="expiry-count">${row.count}</div>
         <div class="expiry-body">
           <strong>${row.bucket}</strong>
@@ -415,14 +465,19 @@
         </div>
       </div>
     `).join('');
+    el.onclick = event => {
+      const step = event.target.closest('[data-bucket]');
+      if (!step) return;
+      IC.openExpiryDetail?.(step.dataset.bucket);
+    };
   }
 
   function renderObligationCalendar() {
     const el = document.getElementById('cmp-calendar');
     if (!el) return;
     const rows = IC.charts.filteredByConcession(D.COMPLIANCE_CALENDAR);
-    el.innerHTML = rows.map(row => `
-      <div class="cal-row">
+    el.innerHTML = rows.map((row, i) => `
+      <div class="cal-row" data-cal-index="${i}" role="button" tabindex="0">
         <div class="cal-date">${row.date}</div>
         <div class="cal-body">
           <strong>${row.item}</strong>
@@ -431,6 +486,11 @@
         <span class="cal-status cal-${row.status.toLowerCase()}">${row.status}</span>
       </div>
     `).join('') || '<div class="rp-empty">No items match filters.</div>';
+    el.onclick = event => {
+      const r = event.target.closest('[data-cal-index]');
+      if (!r) return;
+      IC.openObligationDetail?.(rows[Number(r.dataset.calIndex)]);
+    };
   }
 
   function renderComplianceRail() {
@@ -441,20 +501,25 @@
       const review = data.reduce((s, r) => s + r.inReview, 0);
       const expiring = D.EXPIRY_PIPELINE.reduce((s, r) => s + r.count, 0);
       trio.innerHTML = kpiTrio([
-        { lbl: 'Open Items',    val: open,     tone: 'orange', ico: 'mdi:folder-alert' },
-        { lbl: 'In Review',     val: review,   tone: 'blue',   ico: 'mdi:gavel' },
-        { lbl: 'Expiring 90d',  val: expiring, tone: 'red',    ico: 'mdi:calendar-alert' },
+        { lbl: 'Open Items',                   val: open,     tone: 'orange', ico: 'mdi:folder-alert' },
+        { lbl: 'In Review',                    val: review,   tone: 'blue',   ico: 'mdi:gavel' },
+        { lbl: `Expiring ${periodShort()}`,    val: expiring, tone: 'red',    ico: 'mdi:calendar-alert' },
       ]);
     }
     const due = document.getElementById('cmp-due-week');
     if (due) {
       const rows = IC.charts.filteredByConcession(D.COMPLIANCE_CALENDAR).slice(0, 3);
-      due.innerHTML = rows.map(row => `
-        <div class="due-row">
+      due.innerHTML = rows.map((row, i) => `
+        <div class="due-row" data-due-index="${i}" role="button" tabindex="0">
           <div><strong>${row.item}</strong><span>${row.concession} · ${row.date}</span></div>
           <span class="due-tag">${row.status}</span>
         </div>
       `).join('') || '<div class="rp-empty">Nothing due this week.</div>';
+      due.onclick = event => {
+        const r = event.target.closest('[data-due-index]');
+        if (!r) return;
+        IC.openObligationDetail?.(rows[Number(r.dataset.dueIndex)]);
+      };
     }
   }
 
@@ -472,7 +537,7 @@
     el.innerHTML = D.CREW_UTILISATION.map(row => {
       const status = row.utilisation > 90 ? 'over' : row.utilisation < 70 ? 'under' : 'ok';
       return `
-        <div class="util-gauge util-${status}">
+        <div class="util-gauge util-${status}" data-region="${row.region}" role="button" tabindex="0">
           <svg viewBox="0 0 120 70" class="gauge-svg">
             <path d="M 10 60 A 50 50 0 0 1 110 60" fill="none" stroke="#e2e8f0" stroke-width="10" stroke-linecap="round"/>
             <path d="M 10 60 A 50 50 0 0 1 110 60" fill="none" stroke="currentColor" stroke-width="10" stroke-linecap="round"
@@ -484,6 +549,11 @@
         </div>
       `;
     }).join('');
+    el.onclick = event => {
+      const card = event.target.closest('[data-region]');
+      if (!card) return;
+      IC.openRegionDetail?.(card.dataset.region);
+    };
   }
 
   function renderSafetyChart() {
@@ -534,11 +604,11 @@
     if (trio) {
       const totalCrews = D.CREW_UTILISATION.reduce((s, r) => s + r.crews, 0);
       const avgUtil = D.CREW_UTILISATION.reduce((s, r) => s + r.utilisation, 0) / D.CREW_UTILISATION.length;
-      const ltiYtd = D.SAFETY_INCIDENTS.reduce((s, r) => s + r.lti, 0);
+      const ltiYtd = Math.round(D.SAFETY_INCIDENTS.reduce((s, r) => s + r.lti, 0) * (periodScale() / 4));
       trio.innerHTML = kpiTrio([
-        { lbl: 'Total Crews',  val: totalCrews,         tone: 'blue',   ico: 'mdi:account-group' },
-        { lbl: 'Avg Util',     val: `${avgUtil.toFixed(0)}%`, tone: 'orange', ico: 'mdi:gauge' },
-        { lbl: 'LTI YTD',      val: ltiYtd,             tone: 'red',    ico: 'mdi:hospital' },
+        { lbl: 'Total Crews',            val: totalCrews,               tone: 'blue',   ico: 'mdi:account-group' },
+        { lbl: 'Avg Util',               val: `${avgUtil.toFixed(0)}%`, tone: 'orange', ico: 'mdi:gauge' },
+        { lbl: `LTI ${periodShort()}`,   val: ltiYtd,                   tone: 'red',    ico: 'mdi:hospital' },
       ]);
     }
     const alerts = document.getElementById('wf-safety-alerts');
@@ -570,19 +640,25 @@
         </thead>
         <tbody>
           ${D.REPORTS_LIBRARY.map(r => `
-            <tr>
+            <tr data-report="${r.name}">
               <td><strong>${r.name}</strong><div class="sub">${r.id}</div></td>
               <td>${r.owner}</td>
               <td>${r.lastRun}</td>
               <td>${r.schedule}</td>
               <td>${r.runs}</td>
               <td><span class="fmt-pill fmt-${r.fmt.toLowerCase()}">${r.fmt}</span></td>
-              <td><button class="row-action" type="button" title="Run now"><iconify-icon icon="mdi:play"></iconify-icon></button></td>
+              <td><button class="row-action" type="button" title="Run now" data-run="${r.name}"><iconify-icon icon="mdi:play"></iconify-icon></button></td>
             </tr>
           `).join('')}
         </tbody>
       </table>
     `;
+    el.onclick = event => {
+      const btn = event.target.closest('[data-run]');
+      if (!btn) return;
+      event.stopPropagation();
+      IC.toast?.(`Queued: ${btn.dataset.run}`, 'success');
+    };
   }
 
   function renderReportSchedule() {
@@ -600,12 +676,12 @@
     const trio = document.getElementById('rep-kpi-trio');
     if (trio) {
       const total = D.REPORTS_LIBRARY.length;
-      const runs = D.REPORTS_LIBRARY.reduce((s, r) => s + r.runs, 0);
+      const runs = Math.round(D.REPORTS_LIBRARY.reduce((s, r) => s + r.runs, 0) * periodScale());
       const queued = D.REPORTS_SCHEDULE.filter(r => r.status === 'Queued').length;
       trio.innerHTML = kpiTrio([
-        { lbl: 'Saved Reports', val: total,  tone: 'blue',   ico: 'mdi:file-chart' },
-        { lbl: 'Total Runs',    val: runs,   tone: 'green',  ico: 'mdi:counter' },
-        { lbl: 'Queued',        val: queued, tone: 'orange', ico: 'mdi:clock-fast' },
+        { lbl: 'Saved Reports',          val: total,  tone: 'blue',   ico: 'mdi:file-chart' },
+        { lbl: `Runs ${periodShort()}`,  val: runs,   tone: 'green',  ico: 'mdi:counter' },
+        { lbl: 'Queued',                 val: queued, tone: 'orange', ico: 'mdi:clock-fast' },
       ]);
     }
     if (document.getElementById('rep-format-chart')) {
