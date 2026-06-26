@@ -337,6 +337,151 @@ const STATE_REGIONS = [
   { region: 'East Malaysia', states: ['Sabah', 'Sarawak', 'W.P. Labuan'] },
 ];
 
+// ── Incidents tab ──
+const INCIDENT_HOURLY = Array.from({ length: 24 }, (_, i) => {
+  const hour = (new Date().getHours() - 23 + i + 24) % 24;
+  const base = 6 + Math.round(8 * Math.sin((hour - 6) / 24 * Math.PI * 2 + 1) + 6);
+  return {
+    label: String(hour).padStart(2, '0') + ':00',
+    critical: Math.max(0, Math.round(base * 0.18 + (i % 5 === 0 ? 2 : 0))),
+    high:     Math.max(0, Math.round(base * 0.34)),
+    medium:   Math.max(0, Math.round(base * 0.48 + (i % 3))),
+  };
+});
+const INCIDENT_DISPATCH = [
+  { crew: 'Northbound Rapid 12', concession: 'PLUS',   eta: '6 min',  load: 78 },
+  { crew: 'Central Response 04', concession: 'LITRAK', eta: '9 min',  load: 62 },
+  { crew: 'Klang Valley Unit 07', concession: 'SPRINT', eta: '11 min', load: 55 },
+  { crew: 'Southern Highway 18', concession: 'PLUS',   eta: '14 min', load: 71 },
+  { crew: 'East Coast Patrol 03', concession: 'PLUS',   eta: '22 min', load: 48 },
+];
+
+// ── Traffic & Tolls tab ──
+const TRAFFIC_FLOW = Array.from({ length: 24 }, (_, h) => {
+  const freeFlow = 95 + Math.round(4 * Math.sin(h / 24 * Math.PI * 2));
+  const dip = (h >= 7 && h <= 9) || (h >= 17 && h <= 19) ? 28 + Math.round(Math.random() * 18) : Math.round(Math.random() * 10);
+  return { hour: String(h).padStart(2, '0') + ':00', measured: Math.max(35, freeFlow - dip), freeFlow };
+});
+const TOLL_PLAZAS = [
+  { plaza: 'Sungai Besi',  concession: 'PLUS',   state: 'W.P. Kuala Lumpur', throughput: 14200, revenue: 18.4, change: 4.2 },
+  { plaza: 'Jalan Duta',   concession: 'PLUS',   state: 'W.P. Kuala Lumpur', throughput: 11800, revenue: 15.2, change: 2.1 },
+  { plaza: 'Gombak',       concession: 'PLUS',   state: 'Selangor',          throughput: 13400, revenue: 17.0, change: -1.4 },
+  { plaza: 'Damansara',    concession: 'LITRAK', state: 'Selangor',          throughput: 9600,  revenue: 12.1, change: 3.8 },
+  { plaza: 'Penchala',     concession: 'SPRINT', state: 'Selangor',          throughput: 8200,  revenue: 10.4, change: -0.6 },
+  { plaza: 'Skudai',       concession: 'PLUS',   state: 'Johor',             throughput: 10100, revenue: 12.7, change: 5.5 },
+  { plaza: 'Juru',         concession: 'PLUS',   state: 'Pulau Pinang',      throughput: 9400,  revenue: 11.8, change: 1.2 },
+  { plaza: 'Sg. Dua',      concession: 'PLUS',   state: 'Pulau Pinang',      throughput: 7800,  revenue: 9.6,  change: -2.3 },
+];
+const CONGESTION_HOTSPOTS = [
+  { corridor: 'PLUS — KM 219.3 NB (Tapah)',     state: 'Perak',             jam: 9.2, avgSpeed: 38 },
+  { corridor: 'NKVE — Kota Damansara EB',       state: 'Selangor',          jam: 8.7, avgSpeed: 41 },
+  { corridor: 'LDP — Sunway Toll SB',           state: 'Selangor',          jam: 8.3, avgSpeed: 33 },
+  { corridor: 'SPRINT — Penchala Link',         state: 'W.P. Kuala Lumpur', jam: 7.9, avgSpeed: 36 },
+  { corridor: 'PLUS — KM 152.1 SB (Slim)',      state: 'Perak',             jam: 7.4, avgSpeed: 44 },
+  { corridor: 'NSE — Senai Utara',              state: 'Johor',             jam: 6.8, avgSpeed: 47 },
+];
+
+// ── Asset Pulse tab ──
+const PCI_BY_STATE = STATES.map((state, i) => {
+  const base = 78 + ((i * 7) % 14) - 7;
+  return {
+    state,
+    pci: base,
+    trend: ((i % 4) - 1.5) * 0.6,
+    rul: 9 + ((i * 3) % 11),
+    inspections: 18 + ((i * 5) % 22),
+  };
+});
+const BRIDGE_HEALTH = [
+  { name: 'Penang Bridge',            state: 'Pulau Pinang',  score: 86, due: '12 Aug 2026', rating: 'Good' },
+  { name: 'Sultan Iskandar Bridge',   state: 'Johor',         score: 82, due: '04 Sep 2026', rating: 'Good' },
+  { name: 'Putra Bridge',             state: 'W.P. Putrajaya', score: 91, due: '21 Dec 2026', rating: 'Excellent' },
+  { name: 'Seri Wawasan Bridge',      state: 'W.P. Putrajaya', score: 88, due: '17 Nov 2026', rating: 'Good' },
+  { name: 'Lebuhraya Pantai Timur 3', state: 'Pahang',        score: 71, due: '02 Jul 2026', rating: 'Watch' },
+  { name: 'Sungai Johor Bridge',      state: 'Johor',         score: 76, due: '28 Aug 2026', rating: 'Watch' },
+  { name: 'Rajang Bridge',            state: 'Sarawak',       score: 64, due: '10 Jul 2026', rating: 'Action' },
+];
+
+// ── Sustainability tab ──
+const CO2_BY_CONCESSION = [
+  { concession: 'PLUS',   reduced: 142, target: 180, baseline: 220 },
+  { concession: 'LITRAK', reduced: 78,  target: 90,  baseline: 110 },
+  { concession: 'SPRINT', reduced: 54,  target: 70,  baseline: 88 },
+];
+const RENEWABLE_MIX = [
+  { source: 'Solar',          value: 38 },
+  { source: 'Grid Renewable', value: 22 },
+  { source: 'Biofuel Fleet',  value: 12 },
+  { source: 'Conventional',   value: 28 },
+];
+const GREEN_PROCUREMENT = [
+  { month: 'Jan', spend: 18 }, { month: 'Feb', spend: 22 }, { month: 'Mar', spend: 26 },
+  { month: 'Apr', spend: 25 }, { month: 'May', spend: 29 }, { month: 'Jun', spend: 34 },
+];
+
+// ── Compliance Vault tab ──
+const COMPLIANCE_OBLIGATIONS = [
+  { concession: 'PLUS',   open: 6, inReview: 11, closed: 142 },
+  { concession: 'LITRAK', open: 3, inReview: 7,  closed: 84  },
+  { concession: 'SPRINT', open: 4, inReview: 5,  closed: 61  },
+];
+const EXPIRY_PIPELINE = [
+  { bucket: 'Next 30 days', count: 14, kind: 'Operating licences, insurance policies', tone: 'critical' },
+  { bucket: '31 – 60 days', count: 22, kind: 'Inspection certificates, bonds',         tone: 'high' },
+  { bucket: '61 – 90 days', count: 31, kind: 'Audit closures, employee permits',       tone: 'medium' },
+];
+const COMPLIANCE_CALENDAR = [
+  { date: '02 Jul', concession: 'PLUS',   item: 'Q2 SLA self-attestation',  status: 'Due' },
+  { date: '14 Jul', concession: 'LITRAK', item: 'Insurance renewal',         status: 'Due' },
+  { date: '03 Aug', concession: 'SPRINT', item: 'Independent auditor visit', status: 'Scheduled' },
+  { date: '19 Aug', concession: 'PLUS',   item: 'Pavement audit submission', status: 'Scheduled' },
+  { date: '08 Sep', concession: 'LITRAK', item: 'Concession agreement review', status: 'Planning' },
+];
+
+// ── Workforce tab ──
+const CREW_UTILISATION = [
+  { region: 'Northern',      utilisation: 82, crews: 18, overtime: 142 },
+  { region: 'Central',       utilisation: 94, crews: 26, overtime: 318 },
+  { region: 'Southern',      utilisation: 76, crews: 21, overtime: 188 },
+  { region: 'East Coast',    utilisation: 68, crews: 14, overtime: 96  },
+  { region: 'East Malaysia', utilisation: 71, crews: 16, overtime: 124 },
+];
+const SAFETY_INCIDENTS = [
+  { month: 'Jan', minor: 6, major: 1, lti: 0 },
+  { month: 'Feb', minor: 4, major: 2, lti: 1 },
+  { month: 'Mar', minor: 7, major: 1, lti: 0 },
+  { month: 'Apr', minor: 5, major: 0, lti: 0 },
+  { month: 'May', minor: 8, major: 2, lti: 1 },
+  { month: 'Jun', minor: 3, major: 1, lti: 0 },
+];
+const OVERTIME_HOTSPOTS = [
+  { district: 'KL Central',       hours: 412, change: 8.2 },
+  { district: 'Subang',           hours: 384, change: 5.1 },
+  { district: 'Cheras',           hours: 356, change: -1.4 },
+  { district: 'Johor Bahru',      hours: 318, change: 6.4 },
+  { district: 'Georgetown',       hours: 268, change: 2.0 },
+  { district: 'Kuantan',          hours: 224, change: -3.7 },
+];
+
+// ── Reports tab ──
+const REPORTS_LIBRARY = [
+  { id: 'RPT-001', name: 'Monthly SLA Scorecard',          owner: 'Ops PMO',       lastRun: '24 Jun 2026 09:15', schedule: 'Monthly · 1st', runs: 84,  fmt: 'PDF' },
+  { id: 'RPT-002', name: 'Concession Cash Flow',           owner: 'Finance Lead',  lastRun: '25 Jun 2026 06:00', schedule: 'Weekly · Mon',  runs: 156, fmt: 'XLSX' },
+  { id: 'RPT-003', name: 'Pavement Deterioration Atlas',   owner: 'Asset Mgmt',    lastRun: '12 Jun 2026 22:40', schedule: 'Quarterly',     runs: 18,  fmt: 'PDF' },
+  { id: 'RPT-004', name: 'Compliance Obligation Register', owner: 'Legal',         lastRun: '25 Jun 2026 18:02', schedule: 'Weekly · Fri',  runs: 96,  fmt: 'XLSX' },
+  { id: 'RPT-005', name: 'Workforce Utilisation Heatmap',  owner: 'HR Analytics',  lastRun: '23 Jun 2026 07:30', schedule: 'Bi-weekly',     runs: 64,  fmt: 'PNG' },
+  { id: 'RPT-006', name: 'Sustainability Disclosure',      owner: 'ESG Office',    lastRun: '20 Jun 2026 16:48', schedule: 'Quarterly',     runs: 12,  fmt: 'PDF' },
+  { id: 'RPT-007', name: 'Incident Root-Cause Digest',     owner: 'Safety Cell',   lastRun: '25 Jun 2026 21:11', schedule: 'Daily · 21:00', runs: 312, fmt: 'PDF' },
+  { id: 'RPT-008', name: 'Toll Revenue Reconciliation',    owner: 'Finance Audit', lastRun: '25 Jun 2026 02:15', schedule: 'Daily · 02:00', runs: 480, fmt: 'XLSX' },
+];
+const REPORTS_SCHEDULE = [
+  { date: 'Tonight 22:00', name: 'Incident Root-Cause Digest',  status: 'Queued' },
+  { date: 'Tomorrow 02:00', name: 'Toll Revenue Reconciliation', status: 'Queued' },
+  { date: '27 Jun 06:00',  name: 'Concession Cash Flow',        status: 'Scheduled' },
+  { date: '27 Jun 18:00',  name: 'Compliance Obligation Register', status: 'Scheduled' },
+];
+
+
 const TABS = [
   { id: 'commandCentre',  label: 'Command Centre',   icon: 'mdi:radar',             theme: 'purple',  group: 'Live' },
   { id: 'incidents',      label: 'Incidents Live',   icon: 'mdi:alert',             theme: 'red',     group: 'Live' },
@@ -393,4 +538,22 @@ window.IC_DATA = {
   STATE_REGIONS,
   TABS,
   TAB_THEMES,
+  INCIDENT_HOURLY,
+  INCIDENT_DISPATCH,
+  TRAFFIC_FLOW,
+  TOLL_PLAZAS,
+  CONGESTION_HOTSPOTS,
+  PCI_BY_STATE,
+  BRIDGE_HEALTH,
+  CO2_BY_CONCESSION,
+  RENEWABLE_MIX,
+  GREEN_PROCUREMENT,
+  COMPLIANCE_OBLIGATIONS,
+  EXPIRY_PIPELINE,
+  COMPLIANCE_CALENDAR,
+  CREW_UTILISATION,
+  SAFETY_INCIDENTS,
+  OVERTIME_HOTSPOTS,
+  REPORTS_LIBRARY,
+  REPORTS_SCHEDULE,
 };

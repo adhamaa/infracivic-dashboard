@@ -11,5 +11,6 @@ document.addEventListener('DOMContentLoaded', async () => {
   IC.initRender();
   IC.initOperationsAnalytics();
   IC.initFinancialAnalytics();
+  IC.initExtendedAnalytics();
   await IC.initMap();
 });

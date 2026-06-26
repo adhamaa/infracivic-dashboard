@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>InfraCivic 2.0 — National Command Centre</title>
+  <title>InfraCivic — National Command Centre</title>
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   <link rel="stylesheet" href="css/style.css" />
 </head>
@@ -14,7 +14,7 @@
   <aside id="sidebar">
     <div class="logo">
       <img class="logo-img" src="assets/JKR_Malaysia_logo.png" alt="JKR Malaysia logo" />
-      <span class="logo-name">InfraCivic <b>2.0</b></span>
+      <span class="logo-name"><b>InfraCivic</b></span>
     </div>
     <nav>
       <a href="#" class="nav-item active" data-route="dashboard">
@@ -269,20 +269,20 @@
       <section class="analytics-shell">
         <div class="analytics-header tab-themed">
           <h1>INCIDENTS LIVE (<span data-period-label>LAST 90 DAYS</span>)</h1>
-          <p class="ah-sub">Real-time SOS feed, severity triage and live response map.</p>
+          <p class="ah-sub">Last 24h hourly volume, live SOS ticker, and crew dispatch queue.</p>
         </div>
         <div class="analytics-grid">
-          <article class="analytics-card wide placeholder-card">
-            <div class="analytics-card-head"><span>COMING SOON</span><strong>Live incident heat ribbon</strong></div>
-            <div class="placeholder-pane">Stage 2 will add a streaming incident ticker, severity-coloured heat ribbon, and an instant-acknowledge action rail wired to dispatch.</div>
+          <article class="analytics-card wide">
+            <div class="analytics-card-head"><span>HOURLY INCIDENT VOLUME</span><strong>Last 24 hours, stacked by severity</strong></div>
+            <div id="inc-hourly-chart" class="ag-chart"></div>
           </article>
-          <article class="analytics-card placeholder-card">
-            <div class="analytics-card-head"><span>COMING SOON</span><strong>SOS triage queue</strong></div>
-            <div class="placeholder-pane">Triage board grouping incidents by severity and SLA breach risk.</div>
+          <article class="analytics-card">
+            <div class="analytics-card-head"><span>LIVE SOS FEED</span><strong>Most recent first</strong></div>
+            <div id="inc-feed" class="inc-feed"></div>
           </article>
-          <article class="analytics-card placeholder-card">
-            <div class="analytics-card-head"><span>COMING SOON</span><strong>Crew dispatch radar</strong></div>
-            <div class="placeholder-pane">Radial map of nearest available crews per incident.</div>
+          <article class="analytics-card">
+            <div class="analytics-card-head"><span>DISPATCH QUEUE</span><strong>Nearest crews by ETA</strong></div>
+            <div id="inc-dispatch" class="inc-dispatch"></div>
           </article>
         </div>
       </section>
@@ -292,20 +292,20 @@
       <section class="analytics-shell">
         <div class="analytics-header tab-themed">
           <h1>TRAFFIC &amp; TOLLS (<span data-period-label>LAST 90 DAYS</span>)</h1>
-          <p class="ah-sub">Flow vs free-flow speed, toll revenue per plaza, and congestion hotspots.</p>
+          <p class="ah-sub">24h flow vs free-flow ribbon, plaza throughput league, congestion hotspots.</p>
         </div>
         <div class="analytics-grid">
-          <article class="analytics-card wide placeholder-card">
-            <div class="analytics-card-head"><span>COMING SOON</span><strong>Live flow vs free-flow ribbon</strong></div>
-            <div class="placeholder-pane">Stage 2 will add a per-corridor stream chart of measured flow against historical free-flow baseline.</div>
+          <article class="analytics-card wide">
+            <div class="analytics-card-head"><span>FLOW VS FREE-FLOW</span><strong>Average speed (km/h) by hour</strong></div>
+            <div id="traf-flow-chart" class="ag-chart"></div>
           </article>
-          <article class="analytics-card placeholder-card">
-            <div class="analytics-card-head"><span>COMING SOON</span><strong>Toll plaza throughput</strong></div>
-            <div class="placeholder-pane">Per-plaza vehicle counts and RM/min revenue.</div>
+          <article class="analytics-card">
+            <div class="analytics-card-head"><span>PLAZA THROUGHPUT</span><strong>Live vehicles/hr · revenue RM/hr</strong></div>
+            <div id="traf-plaza-list" class="plaza-list"></div>
           </article>
-          <article class="analytics-card placeholder-card">
-            <div class="analytics-card-head"><span>COMING SOON</span><strong>Congestion hotspots</strong></div>
-            <div class="placeholder-pane">Top 10 chokepoints over the selected period.</div>
+          <article class="analytics-card">
+            <div class="analytics-card-head"><span>CONGESTION HOTSPOTS</span><strong>Top corridors right now</strong></div>
+            <div id="traf-hotspots" class="hotspot-list"></div>
           </article>
         </div>
       </section>
@@ -315,16 +315,16 @@
       <section class="analytics-shell">
         <div class="analytics-header tab-themed">
           <h1>ASSET PULSE (<span data-period-label>LAST 90 DAYS</span>)</h1>
-          <p class="ah-sub">Pavement condition index, bridge health, and remaining useful life per network segment.</p>
+          <p class="ah-sub">Pavement condition index by state, bridge health, and remaining useful life.</p>
         </div>
         <div class="analytics-grid">
-          <article class="analytics-card wide placeholder-card">
-            <div class="analytics-card-head"><span>COMING SOON</span><strong>Pavement condition heatmap</strong></div>
-            <div class="placeholder-pane">Stage 2 will add a kilometre-by-kilometre PCI strip with deterioration trend arrows.</div>
+          <article class="analytics-card wide">
+            <div class="analytics-card-head"><span>PAVEMENT CONDITION INDEX</span><strong>Per-state PCI · higher is better</strong></div>
+            <div id="asset-pci-chart" class="ag-chart"></div>
           </article>
-          <article class="analytics-card wide placeholder-card">
-            <div class="analytics-card-head"><span>COMING SOON</span><strong>Bridge health register</strong></div>
-            <div class="placeholder-pane">Top bridges by inspection score and overdue-inspection flag.</div>
+          <article class="analytics-card wide">
+            <div class="analytics-card-head"><span>BRIDGE HEALTH REGISTER</span><strong>Top-watch inspections</strong></div>
+            <div id="asset-bridge-list" class="bridge-list"></div>
           </article>
         </div>
       </section>
@@ -334,16 +334,20 @@
       <section class="analytics-shell">
         <div class="analytics-header tab-themed">
           <h1>SUSTAINABILITY (<span data-period-label>YTD</span>)</h1>
-          <p class="ah-sub">CO₂ saved per concession, renewable energy mix at depots, and green-procurement spend.</p>
+          <p class="ah-sub">CO₂ reduction vs target, renewable energy mix, green procurement spend.</p>
         </div>
         <div class="analytics-grid">
-          <article class="analytics-card wide placeholder-card">
-            <div class="analytics-card-head"><span>COMING SOON</span><strong>CO₂ vs target</strong></div>
-            <div class="placeholder-pane">Stage 2 will add a per-concession CO₂ reduction race chart with target line.</div>
+          <article class="analytics-card wide">
+            <div class="analytics-card-head"><span>CO₂ REDUCTION RACE</span><strong>Tonnes saved YTD vs annual target</strong></div>
+            <div id="sus-co2-chart" class="ag-chart"></div>
           </article>
-          <article class="analytics-card wide placeholder-card">
-            <div class="analytics-card-head"><span>COMING SOON</span><strong>Renewable energy mix</strong></div>
-            <div class="placeholder-pane">Depot-level stacked bars: solar, grid renewable, conventional.</div>
+          <article class="analytics-card">
+            <div class="analytics-card-head"><span>ENERGY MIX</span><strong>Depot consumption share</strong></div>
+            <div id="sus-mix-chart" class="ag-chart"></div>
+          </article>
+          <article class="analytics-card">
+            <div class="analytics-card-head"><span>GREEN PROCUREMENT SPEND</span><strong>RM millions per month</strong></div>
+            <div id="sus-spend-chart" class="ag-chart"></div>
           </article>
         </div>
       </section>
@@ -353,16 +357,20 @@
       <section class="analytics-shell">
         <div class="analytics-header tab-themed">
           <h1>COMPLIANCE VAULT (<span data-period-label>YTD</span>)</h1>
-          <p class="ah-sub">Outstanding audits, document expiries, and concession-agreement obligations.</p>
+          <p class="ah-sub">Open obligations by concession, document expiry pipeline, and obligation calendar.</p>
         </div>
         <div class="analytics-grid">
-          <article class="analytics-card wide placeholder-card">
-            <div class="analytics-card-head"><span>COMING SOON</span><strong>Obligation calendar</strong></div>
-            <div class="placeholder-pane">Stage 2 will add a 12-month obligations calendar with traffic-light status per concession.</div>
+          <article class="analytics-card wide">
+            <div class="analytics-card-head"><span>OBLIGATIONS BY CONCESSION</span><strong>Open vs in-review vs closed</strong></div>
+            <div id="cmp-obligations-chart" class="ag-chart"></div>
           </article>
-          <article class="analytics-card wide placeholder-card">
-            <div class="analytics-card-head"><span>COMING SOON</span><strong>Document expiry pipeline</strong></div>
-            <div class="placeholder-pane">Funnel of certificates, insurance, and licences expiring in 30/60/90 days.</div>
+          <article class="analytics-card">
+            <div class="analytics-card-head"><span>EXPIRY PIPELINE</span><strong>Next 90 days</strong></div>
+            <div id="cmp-expiry-pipeline" class="expiry-pipeline"></div>
+          </article>
+          <article class="analytics-card">
+            <div class="analytics-card-head"><span>UPCOMING OBLIGATIONS</span><strong>Per concession</strong></div>
+            <div id="cmp-calendar" class="obligation-calendar"></div>
           </article>
         </div>
       </section>
@@ -372,20 +380,20 @@
       <section class="analytics-shell">
         <div class="analytics-header tab-themed">
           <h1>WORKFORCE (<span data-period-label>LAST 30 DAYS</span>)</h1>
-          <p class="ah-sub">Crew utilisation, safety incidents, and overtime hotspots by district.</p>
+          <p class="ah-sub">Crew utilisation by region, safety incidents trend, overtime league.</p>
         </div>
         <div class="analytics-grid">
-          <article class="analytics-card placeholder-card">
-            <div class="analytics-card-head"><span>COMING SOON</span><strong>Crew utilisation gauges</strong></div>
-            <div class="placeholder-pane">Per-district utilisation gauges flagging under- and over-loaded teams.</div>
+          <article class="analytics-card wide">
+            <div class="analytics-card-head"><span>CREW UTILISATION</span><strong>By region · target 75–88%</strong></div>
+            <div id="wf-util-gauges" class="util-gauges"></div>
           </article>
-          <article class="analytics-card placeholder-card">
-            <div class="analytics-card-head"><span>COMING SOON</span><strong>Safety incidents</strong></div>
-            <div class="placeholder-pane">Lost-time injuries by month with severity stacking.</div>
+          <article class="analytics-card">
+            <div class="analytics-card-head"><span>SAFETY INCIDENTS</span><strong>Minor / Major / LTI by month</strong></div>
+            <div id="wf-safety-chart" class="ag-chart"></div>
           </article>
-          <article class="analytics-card wide placeholder-card">
-            <div class="analytics-card-head"><span>COMING SOON</span><strong>Overtime hotspots</strong></div>
-            <div class="placeholder-pane">District-level overtime hours league table.</div>
+          <article class="analytics-card">
+            <div class="analytics-card-head"><span>OVERTIME HOTSPOTS</span><strong>Hours over the last 30 days</strong></div>
+            <div id="wf-ot-chart" class="ag-chart"></div>
           </article>
         </div>
       </section>
@@ -398,17 +406,22 @@
           <p class="ah-sub">Saved, scheduled, and ad-hoc reports across operations, finance, and compliance.</p>
         </div>
         <div class="analytics-grid">
-          <article class="analytics-card wide placeholder-card">
-            <div class="analytics-card-head"><span>COMING SOON</span><strong>Report library</strong></div>
-            <div class="placeholder-pane">Stage 2 will add a searchable grid of saved reports with last-run timestamp, owner, and schedule.</div>
+          <article class="analytics-card wide">
+            <div class="analytics-card-head"><span>REPORT LIBRARY</span><strong>Search and re-run saved reports</strong></div>
+            <div id="rep-library" class="report-library"></div>
           </article>
-          <article class="analytics-card placeholder-card">
-            <div class="analytics-card-head"><span>COMING SOON</span><strong>Schedule queue</strong></div>
-            <div class="placeholder-pane">Upcoming scheduled runs in the next 7 days.</div>
+          <article class="analytics-card">
+            <div class="analytics-card-head"><span>SCHEDULE QUEUE</span><strong>Next 7 days</strong></div>
+            <div id="rep-schedule" class="report-schedule"></div>
           </article>
-          <article class="analytics-card placeholder-card">
-            <div class="analytics-card-head"><span>COMING SOON</span><strong>Build-a-report</strong></div>
-            <div class="placeholder-pane">Drag-and-drop report builder entry point.</div>
+          <article class="analytics-card">
+            <div class="analytics-card-head"><span>BUILD A REPORT</span><strong>Drag fields, schedule, share</strong></div>
+            <div class="report-builder">
+              <button class="rb-step" type="button" data-step="data"><iconify-icon icon="mdi:database"></iconify-icon><span>Pick data source</span></button>
+              <button class="rb-step" type="button" data-step="layout"><iconify-icon icon="mdi:view-dashboard"></iconify-icon><span>Design layout</span></button>
+              <button class="rb-step" type="button" data-step="schedule"><iconify-icon icon="mdi:calendar-clock"></iconify-icon><span>Schedule &amp; share</span></button>
+              <button class="rb-cta" type="button">Open builder</button>
+            </div>
           </article>
         </div>
       </section>
@@ -526,27 +539,101 @@
     </div>
 
     <div id="rp-incidents" class="rp-tab" data-rp-panel="incidents" hidden>
-      <section class="rp-sec rp-placeholder"><div class="rp-hdr rp-grad">LIVE TICKER</div><div class="rp-empty">SOS feed lands here in Stage 2.</div></section>
-      <section class="rp-sec rp-placeholder"><div class="rp-hdr rp-orange">RAPID ACTIONS</div><div class="rp-empty">Quick dispatch, escalate and broadcast.</div></section>
+      <section class="rp-sec">
+        <div class="rp-hdr rp-grad">TODAY AT A GLANCE</div>
+        <div id="inc-kpi-trio" class="kpi-trio"></div>
+      </section>
+      <section class="rp-sec">
+        <div class="rp-hdr rp-orange">SLA BREACH WATCH</div>
+        <div id="inc-breach" class="breach-list"></div>
+      </section>
+      <section class="rp-sec">
+        <div class="rp-hdr rp-teal">QUICK ACTIONS</div>
+        <div class="qa-row">
+          <button class="qa-btn qa-red" type="button"><iconify-icon icon="mdi:bullhorn"></iconify-icon>Broadcast alert</button>
+          <button class="qa-btn qa-blue" type="button"><iconify-icon icon="mdi:phone-in-talk"></iconify-icon>Bridge call</button>
+        </div>
+      </section>
     </div>
 
     <div id="rp-traffic" class="rp-tab" data-rp-panel="traffic" hidden>
-      <section class="rp-sec rp-placeholder"><div class="rp-hdr rp-grad">TODAY'S CORRIDORS</div><div class="rp-empty">Top corridors by flow vs free-flow speed.</div></section>
-      <section class="rp-sec rp-placeholder"><div class="rp-hdr rp-teal">TOLL REVENUE</div><div class="rp-empty">Live RM/min per plaza.</div></section>
+      <section class="rp-sec">
+        <div class="rp-hdr rp-grad">REVENUE PULSE</div>
+        <div id="traf-kpi-trio" class="kpi-trio"></div>
+      </section>
+      <section class="rp-sec">
+        <div class="rp-hdr rp-teal">PLAZA REVENUE TODAY</div>
+        <div id="traf-revenue-chart" class="ag-chart mini"></div>
+      </section>
+      <section class="rp-sec">
+        <div class="rp-hdr rp-orange">PEAK WINDOWS</div>
+        <div class="peak-windows">
+          <div class="peak-row"><span>Morning peak</span><strong>07:30 – 09:00</strong></div>
+          <div class="peak-row"><span>Evening peak</span><strong>17:30 – 19:30</strong></div>
+          <div class="peak-row"><span>Quietest</span><strong>03:00 – 05:00</strong></div>
+        </div>
+      </section>
     </div>
 
-    <div id="rp-asset" class="rp-tab" data-rp-panel="asset" hidden></div>
+    <div id="rp-asset" class="rp-tab" data-rp-panel="asset" hidden>
+      <section class="rp-sec">
+        <div class="rp-hdr rp-grad">NETWORK HEALTH</div>
+        <div id="asset-kpi-trio" class="kpi-trio"></div>
+      </section>
+      <section class="rp-sec">
+        <div class="rp-hdr rp-teal">REMAINING USEFUL LIFE</div>
+        <div id="asset-rul-chart" class="ag-chart mini"></div>
+      </section>
+    </div>
 
-    <div id="rp-sustainability" class="rp-tab" data-rp-panel="sustainability" hidden></div>
+    <div id="rp-sustainability" class="rp-tab" data-rp-panel="sustainability" hidden>
+      <section class="rp-sec">
+        <div class="rp-hdr rp-grad">ESG HEADLINE</div>
+        <div id="sus-kpi-trio" class="kpi-trio"></div>
+      </section>
+      <section class="rp-sec">
+        <div class="rp-hdr rp-teal">QUARTERLY DISCLOSURE</div>
+        <div class="esg-checklist">
+          <div class="esg-row done"><iconify-icon icon="mdi:check-circle"></iconify-icon>Carbon inventory Q1</div>
+          <div class="esg-row done"><iconify-icon icon="mdi:check-circle"></iconify-icon>Water stewardship Q1</div>
+          <div class="esg-row progress"><iconify-icon icon="mdi:progress-clock"></iconify-icon>Biodiversity baseline Q2</div>
+          <div class="esg-row pending"><iconify-icon icon="mdi:clock-outline"></iconify-icon>Scope 3 supplier survey</div>
+        </div>
+      </section>
+    </div>
 
-    <div id="rp-compliance" class="rp-tab" data-rp-panel="compliance" hidden></div>
+    <div id="rp-compliance" class="rp-tab" data-rp-panel="compliance" hidden>
+      <section class="rp-sec">
+        <div class="rp-hdr rp-grad">OBLIGATION HEALTH</div>
+        <div id="cmp-kpi-trio" class="kpi-trio"></div>
+      </section>
+      <section class="rp-sec">
+        <div class="rp-hdr rp-orange">DUE THIS WEEK</div>
+        <div id="cmp-due-week" class="due-list"></div>
+      </section>
+    </div>
 
     <div id="rp-workforce" class="rp-tab" data-rp-panel="workforce" hidden>
-      <section class="rp-sec rp-placeholder"><div class="rp-hdr rp-orange">ON SHIFT NOW</div><div class="rp-empty">Live crew roster summary.</div></section>
-      <section class="rp-sec rp-placeholder"><div class="rp-hdr rp-grad">SAFETY ALERTS</div><div class="rp-empty">Open safety reports needing acknowledgement.</div></section>
+      <section class="rp-sec">
+        <div class="rp-hdr rp-grad">PEOPLE TODAY</div>
+        <div id="wf-kpi-trio" class="kpi-trio"></div>
+      </section>
+      <section class="rp-sec">
+        <div class="rp-hdr rp-orange">SAFETY ALERTS</div>
+        <div id="wf-safety-alerts" class="breach-list"></div>
+      </section>
     </div>
 
-    <div id="rp-reports" class="rp-tab" data-rp-panel="reports" hidden></div>
+    <div id="rp-reports" class="rp-tab" data-rp-panel="reports" hidden>
+      <section class="rp-sec">
+        <div class="rp-hdr rp-grad">LIBRARY OVERVIEW</div>
+        <div id="rep-kpi-trio" class="kpi-trio"></div>
+      </section>
+      <section class="rp-sec">
+        <div class="rp-hdr rp-teal">EXPORT FORMATS</div>
+        <div id="rep-format-chart" class="ag-chart mini"></div>
+      </section>
+    </div>
 
   </aside>
 </div>
@@ -569,6 +656,7 @@
 <script src="js/tabs.js"></script>
 <script src="js/analyticsOps.js"></script>
 <script src="js/analyticsFin.js"></script>
+<script src="js/analyticsTabs.js"></script>
 <script src="js/main.js"></script>
 </body>
 </html>
