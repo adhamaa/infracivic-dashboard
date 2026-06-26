@@ -89,7 +89,8 @@
     if (IC.state.tab !== 'commandCentre') return;
     const el = document.getElementById('chart-conc');
     if (!el) return;
-    const selected = IC.state.filters.concession;
+    const selected = IC.state.filters.concessions || [];
+    const isFiltered = selected.length > 0;
     const max = Math.max(...D.CONCESSIONAIRES.map(item => item.value), 1);
     const data = D.CONCESSIONAIRES.map((item, index) => ({
       ...item,
@@ -97,8 +98,8 @@
       max,
       valueLabel: `RM ${item.value}M`,
       color: D.CONC_COLORS[index % D.CONC_COLORS.length],
-      active: selected !== 'all' && item.concession === selected,
-      dim: selected !== 'all' && item.concession !== selected,
+      active: isFiltered && selected.includes(item.concession),
+      dim: isFiltered && !selected.includes(item.concession),
     }));
     IC.charts.createChart('chart-conc', {
       data,

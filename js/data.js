@@ -321,6 +321,48 @@ const MONTHLY_RELEASES = [
   { month: 'Dec', PLUS: 181, LITRAK: 102, SPRINT: 72 },
 ];
 
+const STATES = [
+  'Perlis', 'Kedah', 'Pulau Pinang', 'Perak',
+  'Selangor', 'W.P. Kuala Lumpur', 'W.P. Putrajaya',
+  'Negeri Sembilan', 'Melaka', 'Johor',
+  'Pahang', 'Terengganu', 'Kelantan',
+  'Sabah', 'Sarawak', 'W.P. Labuan',
+];
+
+const STATE_REGIONS = [
+  { region: 'Northern',      states: ['Perlis', 'Kedah', 'Pulau Pinang', 'Perak'] },
+  { region: 'Central',       states: ['Selangor', 'W.P. Kuala Lumpur', 'W.P. Putrajaya'] },
+  { region: 'Southern',      states: ['Negeri Sembilan', 'Melaka', 'Johor'] },
+  { region: 'East Coast',    states: ['Pahang', 'Terengganu', 'Kelantan'] },
+  { region: 'East Malaysia', states: ['Sabah', 'Sarawak', 'W.P. Labuan'] },
+];
+
+const TABS = [
+  { id: 'commandCentre',  label: 'Command Centre',   icon: 'mdi:radar',             theme: 'purple',  group: 'Live' },
+  { id: 'incidents',      label: 'Incidents Live',   icon: 'mdi:alert',             theme: 'red',     group: 'Live' },
+  { id: 'traffic',        label: 'Traffic & Tolls',  icon: 'mdi:traffic-light',     theme: 'cyan',    group: 'Live' },
+  { id: 'operations',     label: 'Operations',       icon: 'mdi:speedometer',       theme: 'orange',  group: 'Analytics' },
+  { id: 'financial',      label: 'Financial',        icon: 'mdi:cash-multiple',     theme: 'magenta', group: 'Analytics' },
+  { id: 'asset',          label: 'Asset Pulse',      icon: 'mdi:road-variant',      theme: 'blue',    group: 'Analytics' },
+  { id: 'sustainability', label: 'Sustainability',   icon: 'mdi:leaf',              theme: 'green',   group: 'Analytics' },
+  { id: 'compliance',     label: 'Compliance Vault', icon: 'mdi:shield-check',      theme: 'indigo',  group: 'Governance' },
+  { id: 'workforce',      label: 'Workforce',        icon: 'mdi:account-hard-hat',  theme: 'amber',   group: 'Governance' },
+  { id: 'reports',        label: 'Reports',          icon: 'mdi:file-chart',        theme: 'slate',   group: 'Governance' },
+];
+
+const TAB_THEMES = {
+  purple:  { primary: '#7b3aed', dark: '#5c2bbd', soft: '#ede7ff' },
+  red:     { primary: '#dc2626', dark: '#a01717', soft: '#fee2e2' },
+  cyan:    { primary: '#0891b2', dark: '#0a6f8a', soft: '#cffafe' },
+  orange:  { primary: '#ff7a18', dark: '#cc5d05', soft: '#ffedd5' },
+  magenta: { primary: '#c44e7e', dark: '#9a3962', soft: '#fce4ec' },
+  blue:    { primary: '#2563eb', dark: '#1d4fc2', soft: '#dbeafe' },
+  green:   { primary: '#16a34a', dark: '#0f7e39', soft: '#dcfce7' },
+  indigo:  { primary: '#4f46e5', dark: '#3d36b8', soft: '#e0e7ff' },
+  amber:   { primary: '#d97706', dark: '#a85d04', soft: '#fef3c7' },
+  slate:   { primary: '#475569', dark: '#334155', soft: '#e2e8f0' },
+};
+
 window.IC_DATA = {
   ASSIGNEES,
   CONCESSIONS,
@@ -347,4 +389,8 @@ window.IC_DATA = {
   OPEN_CLAIMS,
   BUDGET_BURN,
   MONTHLY_RELEASES,
+  STATES,
+  STATE_REGIONS,
+  TABS,
+  TAB_THEMES,
 };

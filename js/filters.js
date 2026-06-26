@@ -4,12 +4,12 @@
   const IC = window.IC = window.IC || {};
   const D = window.IC_DATA;
   let popover;
+  const dropdowns = new Map();
 
   function initFilters() {
     buildPopover();
-    document.getElementById('concession-filter')?.addEventListener('change', event => {
-      IC.setFilters({ concession: event.target.value });
-    });
+    buildConcessionDropdown();
+    buildStateDropdown();
     document.getElementById('period-filter')?.addEventListener('change', event => {
       IC.setFilters({ period: event.target.value });
     });
@@ -27,15 +27,126 @@
       });
     });
     document.addEventListener('click', event => {
-      if (!popover || popover.hidden) return;
-      if (popover.contains(event.target) || event.target.closest('#advanced-filter-btn')) return;
-      closePopover();
+      if (popover && !popover.hidden) {
+        if (!popover.contains(event.target) && !event.target.closest('#advanced-filter-btn')) closePopover();
+      }
+      dropdowns.forEach(dd => {
+        if (dd.panel.hidden) return;
+        if (!dd.panel.contains(event.target) && !dd.trigger.contains(event.target)) closeDropdown(dd);
+      });
     });
     document.addEventListener('keydown', event => {
-      if (event.key === 'Escape') closePopover();
+      if (event.key !== 'Escape') return;
+      closePopover();
+      dropdowns.forEach(closeDropdown);
     });
     IC.subscribe(syncFilterControls);
     syncFilterControls();
+  }
+
+  function buildConcessionDropdown() {
+    const trigger = document.getElementById('concession-filter');
+    if (!trigger) return;
+    const panel = document.createElement('div');
+    panel.className = 'ms-panel';
+    panel.hidden = true;
+    panel.innerHTML = `
+      <div class="ms-head">
+        <strong>Concessions</strong>
+        <button type="button" class="ms-clear" data-clear>Clear</button>
+      </div>
+      <div class="ms-body">
+        ${D.CONCESSIONS.map(c => `
+          <label class="ms-row"><input type="checkbox" data-concession value="${c}"><span>${c}</span></label>
+        `).join('')}
+      </div>
+    `;
+    trigger.parentElement.appendChild(panel);
+    const dd = { trigger, panel, key: 'concession' };
+    dropdowns.set('concession', dd);
+    trigger.addEventListener('click', event => {
+      event.stopPropagation();
+      toggleDropdown(dd);
+    });
+    panel.querySelectorAll('[data-concession]').forEach(input => {
+      input.addEventListener('change', () => {
+        const concessions = [...panel.querySelectorAll('[data-concession]:checked')].map(i => i.value);
+        IC.setFilters({ concessions });
+      });
+    });
+    panel.querySelector('[data-clear]').addEventListener('click', () => {
+      IC.setFilters({ concessions: [] });
+    });
+  }
+
+  function buildStateDropdown() {
+    const trigger = document.getElementById('state-filter');
+    if (!trigger) return;
+    const panel = document.createElement('div');
+    panel.className = 'ms-panel ms-panel-wide';
+    panel.hidden = true;
+    panel.innerHTML = `
+      <div class="ms-head">
+        <strong>States</strong>
+        <button type="button" class="ms-clear" data-clear>Clear</button>
+      </div>
+      <div class="ms-body ms-body-grouped">
+        ${D.STATE_REGIONS.map(group => `
+          <div class="ms-group">
+            <div class="ms-group-head">
+              <span>${group.region}</span>
+              <button type="button" class="ms-group-toggle" data-region="${group.region}">Toggle</button>
+            </div>
+            ${group.states.map(s => `
+              <label class="ms-row"><input type="checkbox" data-state value="${s}"><span>${s}</span></label>
+            `).join('')}
+          </div>
+        `).join('')}
+      </div>
+    `;
+    trigger.parentElement.appendChild(panel);
+    const dd = { trigger, panel, key: 'state' };
+    dropdowns.set('state', dd);
+    trigger.addEventListener('click', event => {
+      event.stopPropagation();
+      toggleDropdown(dd);
+    });
+    panel.querySelectorAll('[data-state]').forEach(input => {
+      input.addEventListener('change', () => {
+        const states = [...panel.querySelectorAll('[data-state]:checked')].map(i => i.value);
+        IC.setFilters({ states });
+      });
+    });
+    panel.querySelectorAll('[data-region]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const region = btn.dataset.region;
+        const group = D.STATE_REGIONS.find(g => g.region === region);
+        if (!group) return;
+        const current = new Set(IC.state.filters.states || []);
+        const allOn = group.states.every(s => current.has(s));
+        group.states.forEach(s => allOn ? current.delete(s) : current.add(s));
+        IC.setFilters({ states: [...current] });
+      });
+    });
+    panel.querySelector('[data-clear]').addEventListener('click', () => {
+      IC.setFilters({ states: [] });
+    });
+  }
+
+  function toggleDropdown(dd) {
+    if (dd.panel.hidden) openDropdown(dd);
+    else closeDropdown(dd);
+  }
+
+  function openDropdown(dd) {
+    dropdowns.forEach(other => { if (other !== dd) closeDropdown(other); });
+    dd.panel.hidden = false;
+    dd.trigger.setAttribute('aria-expanded', 'true');
+  }
+
+  function closeDropdown(dd) {
+    dd.panel.hidden = true;
+    dd.trigger.setAttribute('aria-expanded', 'false');
   }
 
   function buildPopover() {
@@ -78,7 +189,7 @@
       IC.setFilters({ minCount: Number(event.target.value) });
     });
     popover.querySelector('.fp-reset').addEventListener('click', () => {
-      IC.setFilters({ concession: 'all', status: 'all', dateRange: 'all', roadTypes: [...D.ROAD_TYPES], minCount: 0 });
+      IC.setFilters({ concessions: [], states: [], status: 'all', dateRange: 'all', roadTypes: [...D.ROAD_TYPES], minCount: 0 });
     });
   }
 
@@ -97,12 +208,34 @@
     document.getElementById('advanced-filter-btn')?.setAttribute('aria-expanded', 'false');
   }
 
+  function summarise(list, allLabel, singular, plural) {
+    if (!list || !list.length) return allLabel;
+    if (list.length === 1) return list[0];
+    return `${list.length} ${list.length === 1 ? singular : plural}`;
+  }
+
   function syncFilterControls() {
     const { filters } = IC.state;
-    const concession = document.getElementById('concession-filter');
+    const concessions = filters.concessions || [];
+    const states = filters.states || [];
+    const ccDd = dropdowns.get('concession');
+    if (ccDd) {
+      ccDd.trigger.querySelector('.ms-label').textContent = summarise(concessions, 'All Concessions', 'concession', 'concessions');
+      ccDd.trigger.classList.toggle('ms-active', concessions.length > 0);
+      ccDd.panel.querySelectorAll('[data-concession]').forEach(input => {
+        input.checked = concessions.includes(input.value);
+      });
+    }
+    const stDd = dropdowns.get('state');
+    if (stDd) {
+      stDd.trigger.querySelector('.ms-label').textContent = summarise(states, 'All States', 'state', 'states');
+      stDd.trigger.classList.toggle('ms-active', states.length > 0);
+      stDd.panel.querySelectorAll('[data-state]').forEach(input => {
+        input.checked = states.includes(input.value);
+      });
+    }
     const period = document.getElementById('period-filter');
     const status = document.getElementById('status-filter');
-    if (concession) concession.value = filters.concession;
     if (period) period.value = filters.period;
     if (status) status.value = filters.status;
     document.querySelectorAll('[data-road-type]').forEach(input => {
@@ -128,7 +261,8 @@
   function activeFilterCount() {
     const filters = IC.state.filters;
     let count = 0;
-    if (filters.concession !== 'all') count += 1;
+    if ((filters.concessions || []).length) count += 1;
+    if ((filters.states || []).length) count += 1;
     if (filters.status !== 'all') count += 1;
     if (filters.dateRange !== 'all') count += 1;
     if (filters.minCount > 0) count += 1;
@@ -156,8 +290,11 @@
 
   function getFilteredIncidents() {
     const { filters } = IC.state;
+    const concessions = filters.concessions || [];
+    const states = filters.states || [];
     return IC.state.incidents.filter(incident => {
-      if (filters.concession !== 'all' && incident.concession !== filters.concession) return false;
+      if (concessions.length && !concessions.includes(incident.concession)) return false;
+      if (states.length && incident.state && !states.includes(incident.state)) return false;
       if (!filters.roadTypes.includes(incident.roadType)) return false;
       if (incident.count < filters.minCount) return false;
       return matchesStatus(incident) && matchesDateRange(incident);

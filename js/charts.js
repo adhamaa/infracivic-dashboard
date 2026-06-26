@@ -149,9 +149,15 @@
   }
 
   function filteredByConcession(items) {
-    const selected = IC.state.filters.concession;
-    if (selected === 'all') return items;
-    return items.filter(item => item.concession === selected);
+    const selected = IC.state.filters.concessions;
+    if (!selected || !selected.length) return items;
+    return items.filter(item => selected.includes(item.concession));
+  }
+
+  function filteredByState(items) {
+    const selected = IC.state.filters.states;
+    if (!selected || !selected.length) return items;
+    return items.filter(item => !item.state || selected.includes(item.state));
   }
 
   function severityColor(key) {
@@ -173,6 +179,7 @@
     createChart,
     destroyChart,
     filteredByConcession,
+    filteredByState,
     severityColor,
   };
 })();

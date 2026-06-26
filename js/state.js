@@ -15,7 +15,8 @@
     tab: 'commandCentre',
     view: 'map',
     filters: {
-      concession: 'all',
+      concessions: [],
+      states: [],
       status: 'all',
       period: '90d',
       dateRange: 'all',
