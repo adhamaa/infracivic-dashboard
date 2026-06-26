@@ -14,6 +14,12 @@
 
   const TAB_IDS = (D?.TABS || []).map(t => t.id);
   const TAB_BY_ID = Object.fromEntries((D?.TABS || []).map(t => [t.id, t]));
+  const PERIOD_IDS = Object.keys(periodLabels);
+  const STATUS_IDS = ['all', 'critical', 'high', 'medium', 'low', 'completed'];
+  const DATE_RANGE_IDS = ['all', '24h', '7d', '30d'];
+  const CONCESSION_SET = new Set(D.CONCESSIONS || []);
+  const STATE_SET = new Set((D.STATE_REGIONS || []).flatMap(group => group.states || []));
+  const ROAD_TYPE_SET = new Set(D.ROAD_TYPES || []);
 
   let scrollEl;
   let leftArrow;
@@ -21,11 +27,7 @@
   let carouselReady = false;
 
   function initTabs() {
-    const requestedTab = new URLSearchParams(window.location.search).get('tab');
-    if (TAB_IDS.includes(requestedTab)) {
-      IC.setState({ tab: requestedTab }, 'tab');
-      if (requestedTab === 'financial' && IC.state.filters.period === '90d') IC.setFilters({ period: 'ytd' });
-    }
+    restoreFromUrl();
     document.querySelectorAll('[data-tab]').forEach(button => {
       button.addEventListener('click', () => activateTab(button.dataset.tab));
     });
@@ -69,9 +71,76 @@
     document.querySelectorAll('[data-period-label]').forEach(label => {
       label.textContent = periodLabels[IC.state.filters.period] || String(IC.state.filters.period).toUpperCase();
     });
+    writeUrlFromState();
     if (active === 'commandCentre') setTimeout(() => IC.invalidateMap?.(), 0);
     scrollActiveIntoView();
     updateArrows();
+  }
+
+  function restoreFromUrl() {
+    const params = new URLSearchParams(window.location.search);
+    const statePatch = {};
+    const filtersPatch = {};
+
+    const requestedTab = params.get('tab');
+    if (TAB_IDS.includes(requestedTab)) statePatch.tab = requestedTab;
+
+    const requestedView = params.get('view');
+    if (['map', 'list'].includes(requestedView)) statePatch.view = requestedView;
+
+    const requestedPeriod = params.get('period');
+    if (PERIOD_IDS.includes(requestedPeriod)) filtersPatch.period = requestedPeriod;
+
+    if (params.has('concessions')) filtersPatch.concessions = parseList(params.get('concessions'), CONCESSION_SET);
+    if (params.has('states')) filtersPatch.states = parseList(params.get('states'), STATE_SET);
+
+    const requestedStatus = params.get('status');
+    if (STATUS_IDS.includes(requestedStatus)) filtersPatch.status = requestedStatus;
+
+    const requestedDateRange = params.get('dateRange');
+    if (DATE_RANGE_IDS.includes(requestedDateRange)) filtersPatch.dateRange = requestedDateRange;
+
+    if (params.has('roadTypes')) {
+      const roadTypes = parseList(params.get('roadTypes'), ROAD_TYPE_SET);
+      filtersPatch.roadTypes = roadTypes.length ? roadTypes : [...D.ROAD_TYPES];
+    }
+
+    const requestedMinCount = Number(params.get('minCount'));
+    if (Number.isFinite(requestedMinCount) && requestedMinCount > 0) filtersPatch.minCount = requestedMinCount;
+
+    if (Object.keys(statePatch).length) IC.setState(statePatch, 'url');
+    if (Object.keys(filtersPatch).length) IC.setFilters(filtersPatch);
+    if (IC.state.tab === 'financial' && !params.has('period') && IC.state.filters.period === '90d') IC.setFilters({ period: 'ytd' });
+  }
+
+  function parseList(value, validSet) {
+    const seen = new Set();
+    return String(value || '')
+      .split(',')
+      .map(item => item.trim())
+      .filter(item => item && validSet.has(item) && !seen.has(item) && seen.add(item));
+  }
+
+  function writeUrlFromState() {
+    const params = new URLSearchParams();
+    const { tab, view, filters } = IC.state;
+    const activeTab = tab || 'commandCentre';
+
+    if (activeTab !== 'commandCentre') params.set('tab', activeTab);
+    if (activeTab === 'commandCentre' && view === 'list') params.set('view', 'list');
+    if ((filters.concessions || []).length) params.set('concessions', filters.concessions.join(','));
+    if ((filters.states || []).length) params.set('states', filters.states.join(','));
+    if (filters.period !== '90d') params.set('period', filters.period);
+    if (filters.status !== 'all') params.set('status', filters.status);
+    if (filters.dateRange !== 'all') params.set('dateRange', filters.dateRange);
+    if (filters.minCount > 0) params.set('minCount', String(filters.minCount));
+    if ((filters.roadTypes || []).length !== (D.ROAD_TYPES || []).length) params.set('roadTypes', filters.roadTypes.join(','));
+
+    const query = params.toString();
+    const nextUrl = `${window.location.pathname}${query ? `?${query}` : ''}${window.location.hash}`;
+    if (nextUrl !== `${window.location.pathname}${window.location.search}${window.location.hash}`) {
+      window.history.replaceState(null, '', nextUrl);
+    }
   }
 
   function initCarousel() {
