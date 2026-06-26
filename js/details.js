@@ -248,6 +248,34 @@
     });
   }
 
+  function openStateDetail(name) {
+    const detail = D.getStateDetail?.(name);
+    if (!detail) return;
+    const riskClass = detail.openCritical >= 9 ? 'critical' : detail.openCritical >= 5 ? 'medium' : 'completed';
+    IC.openModal({
+      title: `${detail.state} operational snapshot`,
+      body: `
+        <div class="detail-grid">
+          <div>
+            <span class="sev-pill ${riskClass}">${detail.incidentCount} open incidents</span>
+            <h3>${detail.primaryConcession} primary concession coverage</h3>
+            <p class="detail-meta">${detail.roadKm} road km · ${detail.plazaCount} toll plazas · ${detail.contractorCount} active contractors</p>
+          </div>
+          <div class="detail-owner">
+            <span>Revenue</span>
+            <strong>${detail.monthRevenue}</strong>
+          </div>
+        </div>
+        <div class="timeline">
+          <div class="tl-item"><span>SLA</span><p>${detail.slaCompliance}% of defects were resolved within SLA in the selected period.</p></div>
+          <div class="tl-item"><span>Response</span><p>Average first response time is ${detail.avgResponseHrs} hours across active contractors.</p></div>
+          <div class="tl-item"><span>Severity</span><p>${detail.openCritical} critical, ${detail.openHigh} high, ${detail.openMedium} medium, and ${detail.openLow} low incidents remain open.</p></div>
+          <div class="tl-item"><span>Coverage</span><p>${detail.contractorCount} contractors cover ${detail.roadKm} road km and ${detail.plazaCount} plazas in this state.</p></div>
+        </div>
+      `,
+    });
+  }
+
   IC.openIncidentDetail = openIncidentDetail;
   IC.openContractorDetail = openContractorDetail;
   IC.openClaimDetail = openClaimDetail;
@@ -255,4 +283,5 @@
   IC.openObligationDetail = openObligationDetail;
   IC.openRegionDetail = openRegionDetail;
   IC.openExpiryDetail = openExpiryDetail;
+  IC.openStateDetail = openStateDetail;
 })();

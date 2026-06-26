@@ -106,16 +106,6 @@
         </button>
       </div>
       <div class="tab-filters" aria-label="Dashboard filters">
-        <button type="button" class="t-multi" id="concession-filter" aria-haspopup="listbox" aria-expanded="false" aria-label="Filter by concession">
-          <iconify-icon icon="mdi:office-building-outline"></iconify-icon>
-          <span class="ms-label">All Concessions</span>
-          <iconify-icon class="ms-caret" icon="mdi:chevron-down"></iconify-icon>
-        </button>
-        <button type="button" class="t-multi" id="state-filter" aria-haspopup="listbox" aria-expanded="false" aria-label="Filter by state">
-          <iconify-icon icon="mdi:map-marker-outline"></iconify-icon>
-          <span class="ms-label">All States</span>
-          <iconify-icon class="ms-caret" icon="mdi:chevron-down"></iconify-icon>
-        </button>
         <select class="t-sel" id="period-filter" aria-label="Filter by period">
           <option value="7d">Last 7 days</option><option value="30d">Last 30 days</option>
           <option value="90d">Last 90 days</option><option value="mtd">MTD</option>
@@ -140,6 +130,16 @@
             </div>
           </div>
           <div class="tb-right">
+            <button type="button" class="t-multi" id="concession-filter" aria-haspopup="listbox" aria-expanded="false" aria-label="Filter by concession">
+              <iconify-icon icon="mdi:office-building-outline"></iconify-icon>
+              <span class="ms-label">All Concessions</span>
+              <iconify-icon class="ms-caret" icon="mdi:chevron-down"></iconify-icon>
+            </button>
+            <button type="button" class="t-multi" id="state-filter" aria-haspopup="listbox" aria-expanded="false" aria-label="Filter by state">
+              <iconify-icon icon="mdi:map-marker-outline"></iconify-icon>
+              <span class="ms-label">All States</span>
+              <iconify-icon class="ms-caret" icon="mdi:chevron-down"></iconify-icon>
+            </button>
             <select class="t-sel" id="status-filter" aria-label="Filter by status">
               <option value="all">All Status</option><option value="critical">Critical</option>
               <option value="high">High</option><option value="medium">Medium</option><option value="low">Low</option>
@@ -642,6 +642,7 @@
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/ag-charts-community@10.3.5/dist/umd/ag-charts-community.js"></script>
 <script src="js/data.js"></script>
+<script src="assets/my-states.js"></script>
 <script src="js/state.js"></script>
 <script src="js/charts.js"></script>
 <script src="js/modal.js"></script>

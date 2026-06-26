@@ -11,7 +11,10 @@
   let currentBase;
   const baseLayers = {};
   const markerRefs = new Map();
+  const stateRefs = new Map();
   const routeCache = new Map();
+  let statePopup;
+  let lastStateFilterKey = '';
   let activeRouteRequest = 0;
 
   async function initMap() {
@@ -56,34 +59,151 @@
     bindMapControls();
     IC.subscribe((_, reason) => {
       if (['filters', 'incident', 'incident:add', 'cluster', 'view'].includes(reason)) renderMarkers();
+      if (reason === 'filters') syncStateSelection();
+      if (reason === 'tab' && IC.state.tab === 'commandCentre') setTimeout(() => syncStateSelection({ fit: true, forceFit: true }), 0);
       if (reason === 'basemap') setBasemap(IC.state.basemap);
       syncMapMode();
     });
+    syncStateSelection({ fit: IC.state.tab === 'commandCentre' && IC.state.filters.states.length > 0 });
     syncMapMode();
   }
 
   async function initStateLayer() {
     const topology = await loadMalaysiaGeoJson();
     if (!topology) return;
-    const stateCounts = new Map(D.STATE_DATA.map(({ state, incidentCount }) => [normalizeStateName(state), incidentCount]));
+    stateRefs.clear();
     stateLayer = L.geoJSON(topology, {
       style: feature => {
-        const count = stateCounts.get(normalizeStateName(getFeatureStateName(feature))) || 0;
-        return {
-          color: '#6d28d9',
-          weight: 0.8,
-          opacity: 0.48,
-          fillColor: getStateFill(count),
-          fillOpacity: count ? 0.3 : 0.08,
-        };
+        const name = getCanonicalStateName(getFeatureStateName(feature));
+        return getStateStyle(name);
       },
       onEachFeature: (feature, layer) => {
-        const name = getFeatureStateName(feature);
-        const count = stateCounts.get(normalizeStateName(name)) || 0;
+        const name = getCanonicalStateName(getFeatureStateName(feature));
+        const detail = D.getStateDetail?.(name);
+        const count = detail?.incidentCount || 0;
+        const key = normalizeStateName(name);
+        layer._stateName = name;
+        stateRefs.set(key, layer);
         layer.bindTooltip(`${name}: ${count} incidents`, { className: 'incident-tip' });
+        layer.on({
+          mouseover: () => highlightStateLayer(layer),
+          mouseout: () => syncStateSelection({ fit: false }),
+          click: event => handleStateClick(name, event.latlng),
+        });
       },
     }).addTo(map);
     stateLayer.bringToBack();
+  }
+
+  function handleStateClick(name, latlng) {
+    const current = IC.state.filters.states || [];
+    const key = normalizeStateName(name);
+    const isSoleSelection = current.length === 1 && normalizeStateName(current[0]) === key;
+    IC.setFilters({ states: isSoleSelection ? [] : [name] });
+    if (isSoleSelection) return;
+    openStatePopup(name, latlng);
+  }
+
+  function highlightStateLayer(layer) {
+    layer.setStyle({
+      color: '#5b21b6',
+      weight: 3,
+      opacity: 0.9,
+      fillOpacity: 0.06,
+    });
+    layer.bringToFront();
+  }
+
+  function syncStateSelection({ fit = true, forceFit = false } = {}) {
+    if (!map || !stateLayer) return;
+    const selected = IC.state.filters.states || [];
+    const selectedKeys = new Set(selected.map(normalizeStateName));
+    stateRefs.forEach(layer => {
+      const key = normalizeStateName(layer._stateName);
+      layer.setStyle(getStateStyle(layer._stateName, selectedKeys.has(key)));
+      if (selectedKeys.has(key)) layer.bringToFront();
+    });
+    const stateKey = [...selectedKeys].sort().join('|');
+    if (!fit || IC.state.tab !== 'commandCentre' || (!forceFit && stateKey === lastStateFilterKey)) return;
+    lastStateFilterKey = stateKey;
+    if (!stateKey) {
+      statePopup?.close();
+      map.flyToBounds(defaultBounds, { animate: true, duration: 0.55, padding: [18, 18] });
+      return;
+    }
+    const bounds = getSelectedStateBounds(selectedKeys);
+    if (bounds) {
+      map.flyToBounds(bounds.pad(0.12), {
+        animate: true,
+        duration: 0.65,
+        maxZoom: 9,
+        paddingTopLeft: [250, 92],
+        paddingBottomRight: [80, 120],
+      });
+    }
+  }
+
+  function getSelectedStateBounds(selectedKeys) {
+    let bounds;
+    selectedKeys.forEach(key => {
+      const layer = stateRefs.get(key);
+      if (!layer) return;
+      bounds = bounds ? bounds.extend(layer.getBounds()) : layer.getBounds();
+    });
+    return bounds;
+  }
+
+  function getStateStyle(name, selected = false) {
+    const count = D.getStateDetail?.(name)?.incidentCount || 0;
+    return {
+      color: selected ? '#4c1d95' : getStateFill(count),
+      weight: selected ? 3 : 1.4,
+      opacity: selected ? 0.95 : 0.78,
+      fillColor: getStateFill(count),
+      fillOpacity: selected ? 0.08 : 0.01,
+    };
+  }
+
+  function getCanonicalStateName(name) {
+    return D.getStateDetail?.(name)?.state || name;
+  }
+
+  function openStatePopup(name, latlng) {
+    const detail = D.getStateDetail?.(name);
+    if (!detail) return;
+    statePopup = L.popup({
+      className: 'state-popup-shell',
+      closeButton: true,
+      autoClose: true,
+      closeOnClick: false,
+      maxWidth: 320,
+    })
+      .setLatLng(latlng)
+      .setContent(renderStatePopup(detail))
+      .openOn(map);
+    setTimeout(() => {
+      document.querySelector('[data-state-detail]')?.addEventListener('click', () => IC.openStateDetail?.(detail.state));
+    }, 0);
+  }
+
+  function renderStatePopup(detail) {
+    return `
+      <div class="state-popup">
+        <div class="state-popup-head">
+          <span>${detail.primaryConcession}</span>
+          <strong>${detail.state}</strong>
+        </div>
+        <div class="state-popup-grid">
+          <div><span>Incidents</span><strong>${detail.incidentCount}</strong></div>
+          <div><span>SLA</span><strong>${detail.slaCompliance}%</strong></div>
+          <div><span>Response</span><strong>${detail.avgResponseHrs}h</strong></div>
+          <div><span>Critical</span><strong>${detail.openCritical}</strong></div>
+          <div><span>Road km</span><strong>${detail.roadKm}</strong></div>
+          <div><span>Plazas</span><strong>${detail.plazaCount}</strong></div>
+        </div>
+        <button type="button" class="state-popup-btn" data-state-detail="${detail.state}">View full snapshot</button>
+      </div>
+    `;
   }
 
   function bindMapControls() {
@@ -263,6 +383,7 @@
   }
 
   async function loadMalaysiaGeoJson() {
+    if (window.IC_MALAYSIA_GEOJSON) return window.IC_MALAYSIA_GEOJSON;
     for (const url of D.TOPO_URLS) {
       try {
         const res = await fetch(url, { signal: AbortSignal.timeout(8000) });
@@ -289,7 +410,7 @@
       .replace(/\bwilayah persekutuan\b/g, 'wp')
       .replace(/\s+/g, ' ')
       .trim();
-    const aliases = { penang: 'pulau pinang', 'kuala lumpur': 'wp kuala lumpur', labuan: 'wp labuan', putrajaya: 'wp putrajaya' };
+    const aliases = { penang: 'pulau pinang', malacca: 'melaka', 'kuala lumpur': 'wp kuala lumpur', labuan: 'wp labuan', putrajaya: 'wp putrajaya' };
     return aliases[cleaned] || cleaned;
   }
 
@@ -306,4 +427,5 @@
   IC.pulseIncidentMarker = pulseIncidentMarker;
   IC.focusIncidentOnMap = focusIncidentOnMap;
   IC.clearFocusedRoute = clearFocusedRoute;
+  IC.normalizeStateName = normalizeStateName;
 })();

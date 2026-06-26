@@ -162,23 +162,42 @@ const PAYMENTS = [
 ];
 
 const STATE_DATA = [
-  { state:'Johor',             incidentCount:45 },
-  { state:'Kedah',             incidentCount:38 },
-  { state:'Kelantan',          incidentCount:52 },
-  { state:'Melaka',            incidentCount:20 },
-  { state:'Negeri Sembilan',   incidentCount:28 },
-  { state:'Pahang',            incidentCount:63 },
-  { state:'Perak',             incidentCount:55 },
-  { state:'Perlis',            incidentCount:8  },
-  { state:'Pulau Pinang',      incidentCount:31 },
-  { state:'Sabah',             incidentCount:72 },
-  { state:'Sarawak',           incidentCount:85 },
-  { state:'Selangor',          incidentCount:58 },
-  { state:'Terengganu',        incidentCount:44 },
-  { state:'W.P. Kuala Lumpur', incidentCount:22 },
-  { state:'W.P. Labuan',       incidentCount:5  },
-  { state:'W.P. Putrajaya',    incidentCount:3  },
+  { state:'Johor',             incidentCount:45, openCritical:6,  openHigh:13, openMedium:17, openLow:9,  slaCompliance:88, avgResponseHrs:2.9, roadKm:628, plazaCount:19, contractorCount:7,  monthRevenue:'RM 96.4M', primaryConcession:'PLUS' },
+  { state:'Kedah',             incidentCount:38, openCritical:4,  openHigh:10, openMedium:15, openLow:9,  slaCompliance:86, avgResponseHrs:3.2, roadKm:412, plazaCount:12, contractorCount:5,  monthRevenue:'RM 42.8M', primaryConcession:'PLUS' },
+  { state:'Kelantan',          incidentCount:52, openCritical:8,  openHigh:15, openMedium:19, openLow:10, slaCompliance:81, avgResponseHrs:4.1, roadKm:286, plazaCount:6,  contractorCount:4,  monthRevenue:'RM 18.7M', primaryConcession:'PLUS' },
+  { state:'Melaka',            incidentCount:20, openCritical:2,  openHigh:5,  openMedium:8,  openLow:5,  slaCompliance:91, avgResponseHrs:2.2, roadKm:164, plazaCount:5,  contractorCount:3,  monthRevenue:'RM 21.3M', primaryConcession:'PLUS' },
+  { state:'Negeri Sembilan',   incidentCount:28, openCritical:3,  openHigh:8,  openMedium:11, openLow:6,  slaCompliance:89, avgResponseHrs:2.7, roadKm:238, plazaCount:8,  contractorCount:4,  monthRevenue:'RM 31.6M', primaryConcession:'PLUS' },
+  { state:'Pahang',            incidentCount:63, openCritical:9,  openHigh:18, openMedium:24, openLow:12, slaCompliance:82, avgResponseHrs:4.4, roadKm:746, plazaCount:18, contractorCount:8,  monthRevenue:'RM 64.2M', primaryConcession:'PLUS' },
+  { state:'Perak',             incidentCount:55, openCritical:7,  openHigh:16, openMedium:21, openLow:11, slaCompliance:84, avgResponseHrs:3.8, roadKm:684, plazaCount:17, contractorCount:7,  monthRevenue:'RM 58.9M', primaryConcession:'PLUS' },
+  { state:'Perlis',            incidentCount:8,  openCritical:1,  openHigh:2,  openMedium:3,  openLow:2,  slaCompliance:93, avgResponseHrs:1.9, roadKm:88,  plazaCount:2,  contractorCount:1,  monthRevenue:'RM 6.1M',  primaryConcession:'PLUS' },
+  { state:'Pulau Pinang',      incidentCount:31, openCritical:4,  openHigh:9,  openMedium:12, openLow:6,  slaCompliance:87, avgResponseHrs:2.5, roadKm:216, plazaCount:7,  contractorCount:4,  monthRevenue:'RM 44.5M', primaryConcession:'PLUS' },
+  { state:'Sabah',             incidentCount:72, openCritical:11, openHigh:20, openMedium:27, openLow:14, slaCompliance:79, avgResponseHrs:4.8, roadKm:524, plazaCount:9,  contractorCount:6,  monthRevenue:'RM 24.9M', primaryConcession:'LITRAK' },
+  { state:'Sarawak',           incidentCount:85, openCritical:13, openHigh:24, openMedium:32, openLow:16, slaCompliance:78, avgResponseHrs:4.6, roadKm:948, plazaCount:14, contractorCount:9,  monthRevenue:'RM 39.7M', primaryConcession:'PLUS' },
+  { state:'Selangor',          incidentCount:58, openCritical:8,  openHigh:17, openMedium:22, openLow:11, slaCompliance:85, avgResponseHrs:2.4, roadKm:356, plazaCount:22, contractorCount:9,  monthRevenue:'RM 118.6M', primaryConcession:'LITRAK' },
+  { state:'Terengganu',        incidentCount:44, openCritical:5,  openHigh:13, openMedium:17, openLow:9,  slaCompliance:83, avgResponseHrs:3.9, roadKm:332, plazaCount:7,  contractorCount:4,  monthRevenue:'RM 19.8M', primaryConcession:'PLUS' },
+  { state:'W.P. Kuala Lumpur', incidentCount:22, openCritical:3,  openHigh:6,  openMedium:8,  openLow:5,  slaCompliance:90, avgResponseHrs:1.8, roadKm:124, plazaCount:10, contractorCount:5,  monthRevenue:'RM 73.5M', primaryConcession:'SPRINT' },
+  { state:'W.P. Labuan',       incidentCount:5,  openCritical:1,  openHigh:1,  openMedium:2,  openLow:1,  slaCompliance:94, avgResponseHrs:1.6, roadKm:42,  plazaCount:1,  contractorCount:1,  monthRevenue:'RM 3.4M',  primaryConcession:'LITRAK' },
+  { state:'W.P. Putrajaya',    incidentCount:3,  openCritical:0,  openHigh:1,  openMedium:1,  openLow:1,  slaCompliance:94, avgResponseHrs:1.7, roadKm:36,  plazaCount:2,  contractorCount:1,  monthRevenue:'RM 5.8M',  primaryConcession:'SPRINT' },
 ];
+
+function normalizeStateLookup(name) {
+  const cleaned = String(name || '')
+    .toLowerCase()
+    .normalize('NFKD')
+    .replace(/[()]/g, ' ')
+    .replace(/[^a-z0-9. ]/g, '')
+    .replace(/\bw\.p\.\b/g, 'wp')
+    .replace(/\bwilayah persekutuan\b/g, 'wp')
+    .replace(/\s+/g, ' ')
+    .trim();
+  const aliases = { penang: 'pulau pinang', malacca: 'melaka', 'kuala lumpur': 'wp kuala lumpur', labuan: 'wp labuan', putrajaya: 'wp putrajaya' };
+  return aliases[cleaned] || cleaned;
+}
+
+function getStateDetail(name) {
+  const lookup = normalizeStateLookup(name);
+  return STATE_DATA.find(item => normalizeStateLookup(item.state) === lookup) || null;
+}
 
 const TOPO_URLS = [
   'https://code.highcharts.com/mapdata/countries/my/my-all.geo.json',
@@ -523,6 +542,7 @@ window.IC_DATA = {
   ALERTS,
   PAYMENTS,
   STATE_DATA,
+  getStateDetail,
   TOPO_URLS,
   SLA_BY_CONCESSION_SEVERITY,
   MTTR_TREND,

@@ -31,6 +31,7 @@
     document.querySelectorAll('[data-tab]').forEach(button => {
       button.addEventListener('click', () => activateTab(button.dataset.tab));
     });
+    initFilterBadges();
     IC.subscribe((_, reason) => {
       if (['tab', 'route', 'filters'].includes(reason)) syncTabs();
     });
@@ -71,10 +72,36 @@
     document.querySelectorAll('[data-period-label]').forEach(label => {
       label.textContent = periodLabels[IC.state.filters.period] || String(IC.state.filters.period).toUpperCase();
     });
+    syncFilterBadges();
     writeUrlFromState();
     if (active === 'commandCentre') setTimeout(() => IC.invalidateMap?.(), 0);
     scrollActiveIntoView();
     updateArrows();
+  }
+
+  function initFilterBadges() {
+    document.querySelectorAll('[data-tab-panel]:not([data-tab-panel="commandCentre"]) .analytics-header').forEach(header => {
+      if (header.querySelector('.filter-badge')) return;
+      const badge = document.createElement('button');
+      badge.type = 'button';
+      badge.className = 'filter-badge';
+      badge.hidden = true;
+      badge.addEventListener('click', () => activateTab('commandCentre'));
+      header.appendChild(badge);
+    });
+  }
+
+  function syncFilterBadges() {
+    const { concessions = [], states = [] } = IC.state.filters || {};
+    const parts = [];
+    if (concessions.length) parts.push(concessions.length === 1 ? concessions[0] : `${concessions.length} concessions`);
+    if (states.length) parts.push(states.length === 1 ? states[0] : `${states.length} states`);
+    const text = parts.length ? `Filtered: ${parts.join(' · ')}` : '';
+    document.querySelectorAll('.filter-badge').forEach(badge => {
+      badge.hidden = !text;
+      badge.textContent = text;
+      badge.setAttribute('aria-label', text ? `${text}. Edit on Command Centre` : 'No active dashboard filters');
+    });
   }
 
   function restoreFromUrl() {
