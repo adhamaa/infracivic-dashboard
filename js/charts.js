@@ -4,6 +4,7 @@
   const IC = window.IC = window.IC || {};
   const D = window.IC_DATA;
   const charts = new Map();
+  const chartOptions = new Map();
   const reducedMotion = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
 
   const chartFont = 'Segoe UI, system-ui, -apple-system, sans-serif';
@@ -94,6 +95,7 @@
     const chart = charts.get(id);
     if (chart?.destroy) chart.destroy();
     charts.delete(id);
+    chartOptions.delete(id);
   }
 
   function chartBox(container) {
@@ -119,7 +121,7 @@
     const size = chartBox(container);
     const sizeOptions = size.width > 0 && size.height > 0 ? size : {};
     try {
-      const chart = window.agCharts.AgCharts.create({
+      const optionsWithDefaults = {
         container,
         ...sizeOptions,
         background: { fill: 'transparent' },
@@ -139,13 +141,30 @@
           },
         },
         ...modernOptions(options),
-      });
+      };
+      const chart = window.agCharts.AgCharts.create(optionsWithDefaults);
       charts.set(id, chart);
+      chartOptions.set(id, optionsWithDefaults);
       return chart;
     } catch (error) {
       console.warn(`Unable to render chart ${id}`, error);
       container.innerHTML = '<div class="chart-empty">Chart could not be rendered.</div>';
     }
+  }
+
+  function resizeCharts() {
+    charts.forEach((chart, id) => {
+      const container = document.getElementById(id);
+      if (!container || !chart) return;
+      const size = chartBox(container);
+      if (!size.width || !size.height) return;
+      const options = chartOptions.get(id);
+      if (!options) return;
+      const resizedOptions = { ...options, ...size };
+      chartOptions.set(id, resizedOptions);
+      if (typeof chart.update === 'function') chart.update(resizedOptions);
+      else if (window.agCharts?.AgCharts?.update) window.agCharts.AgCharts.update(chart, resizedOptions);
+    });
   }
 
   function filteredByConcession(items) {
@@ -178,8 +197,10 @@
     palette,
     createChart,
     destroyChart,
+    resizeCharts,
     filteredByConcession,
     filteredByState,
     severityColor,
   };
+  IC.resizeCharts = resizeCharts;
 })();

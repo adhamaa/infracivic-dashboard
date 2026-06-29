@@ -9,6 +9,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   IC.initQuickActions();
   IC.initRoutes();
   IC.initRender();
+  IC.initCardExpand();
   IC.initOperationsAnalytics();
   IC.initFinancialAnalytics();
   IC.initExtendedAnalytics();

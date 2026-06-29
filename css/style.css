@@ -377,6 +377,110 @@ iconify-icon {
 .ag-chart.mini { height: 154px; min-height: 154px; padding: 8px; }
 .ag-chart.bubble-card { height: 240px; min-height: 240px; padding: 6px; }
 
+/* ── Card expansion overlay ─────────────────────────────── */
+.expandable-card { position: relative; }
+
+.card-expand-trigger,
+.card-expand-close {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  z-index: 20;
+  width: 28px;
+  height: 28px;
+  border: 1px solid rgba(148,163,184,.42);
+  border-radius: 8px;
+  background: rgba(255,255,255,.88);
+  color: var(--g600);
+  display: inline-grid;
+  place-items: center;
+  cursor: pointer;
+  opacity: 0;
+  transform: translateY(-2px) scale(.96);
+  box-shadow: 0 6px 16px rgba(15,23,42,.12);
+  backdrop-filter: blur(10px);
+  transition: opacity .16s, transform .16s, background .16s, color .16s, border-color .16s;
+}
+.card-expand-trigger iconify-icon,
+.card-expand-close iconify-icon { font-size: 16px; }
+.expandable-card:hover > .card-expand-trigger,
+.card-expand-trigger:focus,
+.card-expand-trigger:focus-visible,
+.is-expanded-card:hover > .card-expand-close,
+.card-expand-close:focus,
+.card-expand-close:focus-visible {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+}
+.card-expand-trigger:hover,
+.card-expand-trigger:focus,
+.card-expand-trigger:focus-visible,
+.card-expand-close:hover,
+.card-expand-close:focus,
+.card-expand-close:focus-visible {
+  background: #fff;
+  color: var(--p700);
+  border-color: rgba(112,64,183,.44);
+  outline: none;
+}
+.is-expanded-card > .card-expand-trigger { display: none; }
+.analytics-card-head { padding-right: 48px; }
+#main-header { padding-right: 52px; }
+.rp-hdr,
+.panel-title { padding-right: 36px; }
+
+.card-expand-placeholder {
+  min-width: 0;
+  border: 1px dashed rgba(112,64,183,.35);
+  border-radius: 12px;
+  background: repeating-linear-gradient(135deg, rgba(240,232,251,.75) 0, rgba(240,232,251,.75) 12px, rgba(255,255,255,.65) 12px, rgba(255,255,255,.65) 24px);
+}
+
+.card-expand-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 5000;
+  display: grid;
+  place-items: center;
+  padding: 26px;
+  background: rgba(15,23,42,.34);
+  backdrop-filter: blur(0);
+  opacity: 0;
+  transition: opacity .22s ease, backdrop-filter .22s ease;
+}
+.card-expand-overlay[hidden] { display: none; }
+.card-expand-overlay.is-open {
+  opacity: 1;
+  backdrop-filter: blur(9px);
+}
+.card-expanded-open { overflow: hidden; }
+.is-expanded-card {
+  flex: 1 !important;
+  width: 100% !important;
+  min-width: 0 !important;
+  min-height: 0 !important;
+  max-width: none !important;
+  margin: 0 !important;
+  transform: none !important;
+  box-shadow: 0 14px 36px rgba(28,40,66,.14) !important;
+}
+.card-expand-overlay > .is-expanded-card {
+  width: min(1120px, calc(100vw - 52px)) !important;
+  height: min(760px, calc(100vh - 52px)) !important;
+  max-height: calc(100vh - 52px) !important;
+  overflow: hidden !important;
+  transform: translateY(16px) scale(.965) !important;
+  transition: transform .24s cubic-bezier(.2,.8,.2,1) !important;
+}
+.card-expand-overlay.is-open > .is-expanded-card { transform: translateY(0) scale(1) !important; }
+.is-expanded-card.analytics-card,
+.is-expanded-card#map-card,
+.is-expanded-card#alerts-panel,
+.is-expanded-card#actions-panel,
+.is-expanded-card.rp-sec {
+  min-height: 100% !important;
+}
+
 .budget-gauges {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
