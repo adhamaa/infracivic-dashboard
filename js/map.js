@@ -6,6 +6,8 @@
   let map;
   let markerLayer;
   let stateLayer;
+  let roadLayer;
+  let roadSummaryControl;
   let focusRouteLayer;
   let defaultBounds;
   let currentBase;
@@ -13,10 +15,14 @@
   const markerRefs = new Map();
   const stateRefs = new Map();
   const routeCache = new Map();
+  const roadFeatureCache = new Map();
   let statePopup;
   let lastStateFilterKey = '';
+  let lastMapTier = '';
   let activeRouteRequest = 0;
   let suppressStatePopupClose = false;
+  const TIER_BREAKS = { nationalMax: 7, regionalMax: 10 };
+  const SEVERITY_RANK = { completed: 0, low: 1, medium: 2, high: 3, critical: 4 };
 
   async function initMap() {
     const el = document.getElementById('map-chart');
@@ -54,8 +60,10 @@
     setTimeout(() => map.invalidateSize(), 0);
 
     markerLayer = L.layerGroup().addTo(map);
+    roadLayer = L.layerGroup().addTo(map);
     focusRouteLayer = L.layerGroup().addTo(map);
     await initStateLayer();
+    map.on('zoomend', handleZoomTierChange);
     renderMarkers();
     bindMapControls();
     IC.subscribe((_, reason) => {
@@ -73,6 +81,7 @@
     const topology = await loadMalaysiaGeoJson();
     if (!topology) return;
     stateRefs.clear();
+    IC.state.stateCentroids = {};
     stateLayer = L.geoJSON(topology, {
       style: feature => {
         const name = getCanonicalStateName(getFeatureStateName(feature));
@@ -85,6 +94,7 @@
         const key = normalizeStateName(name);
         layer._stateName = name;
         stateRefs.set(key, layer);
+        IC.state.stateCentroids[name] = layer.getBounds().getCenter();
         layer.bindTooltip(`${name}: ${count} incidents`, { className: 'incident-tip' });
         layer.on({
           mouseover: () => highlightStateLayer(layer),
@@ -231,17 +241,45 @@
     });
   }
 
+  function handleZoomTierChange() {
+    const tier = getMapTier(map.getZoom());
+    if (tier === lastMapTier && IC.state.clusterView) return;
+    renderMarkers();
+  }
+
+  function getMapTier(zoom) {
+    if (zoom <= TIER_BREAKS.nationalMax) return 'national';
+    if (zoom <= TIER_BREAKS.regionalMax) return 'regional';
+    return 'road';
+  }
+
   function renderMarkers() {
     if (!markerLayer) return;
     markerLayer.clearLayers();
     markerRefs.clear();
-    IC.getFilteredIncidents().forEach(incident => {
+    const incidents = IC.getFilteredIncidents();
+    const tier = IC.state.clusterView ? getMapTier(map.getZoom()) : 'raw';
+    lastMapTier = tier;
+    renderRoadLayer(tier);
+    if (tier === 'national') {
+      renderStateBadges(incidents);
+      return;
+    }
+    if (tier === 'road') {
+      renderRoadLevelMarkers(incidents);
+      return;
+    }
+    renderRegionalMarkers(incidents, tier === 'regional');
+  }
+
+  function renderRegionalMarkers(incidents, clustered = true) {
+    incidents.forEach(incident => {
       const visual = incident.status === 'resolved' ? 'completed' : incident.sev;
-      const size = IC.state.clusterView ? Math.max(22, Math.min(44, Math.round(18 + Math.sqrt(incident.count) * 4))) : 10;
+      const size = clustered ? Math.max(22, Math.min(44, Math.round(18 + Math.sqrt(incident.count) * 4))) : 10;
       const marker = L.marker([incident.lat, incident.lng], {
         icon: L.divIcon({
-          className: `incident-marker ${visual} ${incident.status} ${IC.state.clusterView ? 'cluster-marker' : 'dot-marker'}`,
-          html: `<span>${IC.state.clusterView ? incident.count : ''}</span>`,
+          className: `incident-marker ${visual} ${incident.status} ${clustered ? 'cluster-marker' : 'dot-marker'}`,
+          html: `<span>${clustered ? incident.count : ''}</span>`,
           iconSize: [size, size],
           iconAnchor: [size / 2, size / 2],
         }),
@@ -256,6 +294,222 @@
       marker.addTo(markerLayer);
       markerRefs.set(incident.id, marker);
     });
+  }
+
+  function renderStateBadges(incidents) {
+    const grouped = new Map();
+    incidents.forEach(incident => {
+      const key = normalizeStateName(incident.state);
+      const current = grouped.get(key) || {
+        state: incident.state,
+        total: 0,
+        breakdown: { critical: 0, high: 0, medium: 0, low: 0, completed: 0 },
+        visual: 'completed',
+      };
+      const visual = incident.status === 'resolved' ? 'completed' : incident.sev;
+      current.total += Number(incident.count) || 0;
+      current.breakdown[visual] += Number(incident.count) || 0;
+      if (SEVERITY_RANK[visual] > SEVERITY_RANK[current.visual]) current.visual = visual;
+      grouped.set(key, current);
+    });
+
+    grouped.forEach(group => {
+      const centroid = IC.state.stateCentroids?.[group.state] || getStateCentroid(group.state);
+      if (!centroid) return;
+      const size = Math.max(30, Math.min(52, Math.round(24 + Math.sqrt(group.total) * 3.2)));
+      const marker = L.marker(centroid, {
+        icon: L.divIcon({
+          className: `incident-marker state-badge ${group.visual}`,
+          html: `<span>${group.total}</span>`,
+          iconSize: [size, size],
+          iconAnchor: [size / 2, size / 2],
+        }),
+        title: `${group.state}: ${group.total} incidents`,
+        riseOnHover: true,
+      });
+      marker.bindTooltip(renderStateBadgeTooltip(group), {
+        className: 'incident-tip',
+        direction: 'top',
+        offset: [0, -size / 2],
+      });
+      marker.on('click', () => IC.setFilters({ states: [group.state] }));
+      marker.addTo(markerLayer);
+      markerRefs.set(`state:${normalizeStateName(group.state)}`, marker);
+    });
+  }
+
+  function getStateCentroid(name) {
+    const layer = stateRefs.get(normalizeStateName(name));
+    return layer?.getBounds().getCenter() || null;
+  }
+
+  function renderStateBadgeTooltip(group) {
+    const parts = ['critical', 'high', 'medium', 'low', 'completed']
+      .filter(key => group.breakdown[key] > 0)
+      .map(key => `${group.breakdown[key]} ${D.SEVERITY_LABELS[key].toLowerCase()}`);
+    return `${group.state}: ${group.total} total · ${parts.join(' · ')}`;
+  }
+
+  function renderRoadLevelMarkers(incidents) {
+    incidents.forEach(incident => {
+      const visual = incident.status === 'resolved' ? 'completed' : incident.sev;
+      const positions = getRoadDotPositions(incident);
+      positions.forEach((position, index) => {
+        const size = 9;
+        const marker = L.marker(position, {
+          icon: L.divIcon({
+            className: `incident-marker road-dot ${visual} ${incident.status}`,
+            html: '<span></span>',
+            iconSize: [size, size],
+            iconAnchor: [size / 2, size / 2],
+          }),
+          title: `${D.SEVERITY_LABELS[visual] || IC.cap(visual)} incident`,
+          zIndexOffset: index,
+        });
+        marker.bindTooltip(`${incident.kmLabel} · ${incident.location}`, {
+          className: 'incident-tip',
+          direction: 'top',
+          offset: [0, -6],
+        });
+        marker.on('click', () => IC.openIncidentDetail(incident.id));
+        marker.addTo(markerLayer);
+        if (index === 0) markerRefs.set(incident.id, marker);
+      });
+    });
+  }
+
+  function getRoadDotPositions(incident) {
+    const count = Math.max(1, Number(incident.count) || 1);
+    const road = getRoadFeature(incident.roadId);
+    if (!road) return getFallbackDotPositions(incident, count);
+    const path = roadToLatLngs(road);
+    const snap = snapToPolyline([incident.lat, incident.lng], path);
+    return Array.from({ length: count }, (_, index) => offsetAlongRoad(snap, index, count));
+  }
+
+  function getFallbackDotPositions(incident, count) {
+    const columns = Math.ceil(Math.sqrt(count));
+    const spacing = 0.0042;
+    return Array.from({ length: count }, (_, index) => {
+      const row = Math.floor(index / columns);
+      const column = index % columns;
+      const latOffset = (row - columns / 2) * spacing;
+      const lngOffset = (column - columns / 2) * spacing;
+      return [incident.lat + latOffset, incident.lng + lngOffset];
+    });
+  }
+
+  function renderRoadLayer(tier) {
+    if (!roadLayer) return;
+    roadLayer.clearLayers();
+    if (roadSummaryControl) {
+      roadSummaryControl.remove();
+      roadSummaryControl = null;
+    }
+    if (tier !== 'road') return;
+    const visibleTypes = new Set(IC.state.filters.roadTypes || []);
+    let visibleCount = 0;
+    getRoadFeatures().forEach(feature => {
+      const type = feature.properties?.type || 'expressway';
+      if (!visibleTypes.has(type)) return;
+      visibleCount += 1;
+      const line = L.polyline(roadToLatLngs(feature), {
+        color: getRoadColor(type),
+        weight: 4,
+        opacity: 0.72,
+        lineCap: 'round',
+        lineJoin: 'round',
+        interactive: false,
+        className: `road-polyline road-polyline-${type}`,
+      }).addTo(roadLayer);
+      line.bindTooltip(feature.properties?.id || feature.properties?.name || IC.cap(type), {
+        className: 'road-label',
+        permanent: true,
+        direction: 'center',
+        opacity: 0.88,
+      });
+    });
+    renderRoadModeSummary(visibleCount, visibleTypes);
+  }
+
+  function renderRoadModeSummary(visibleCount, visibleTypes) {
+    const enabled = ['expressway', 'federal', 'state', 'district'].filter(type => visibleTypes.has(type));
+    roadSummaryControl = L.control({ position: 'bottomleft' });
+    roadSummaryControl.onAdd = () => {
+      const summary = L.DomUtil.create('div', 'road-mode-summary');
+      summary.innerHTML = `<strong>Road level</strong><span>${visibleCount} routes visible · ${enabled.map(IC.cap).join(', ') || 'No layers'}</span>`;
+      L.DomEvent.disableClickPropagation(summary);
+      return summary;
+    };
+    roadSummaryControl.addTo(map);
+  }
+
+  function getRoadFeatures() {
+    return window.IC_ROADS?.features || [];
+  }
+
+  function getRoadFeature(id) {
+    if (!id) return null;
+    if (roadFeatureCache.has(id)) return roadFeatureCache.get(id);
+    const feature = getRoadFeatures().find(item => item.properties?.id === id) || null;
+    roadFeatureCache.set(id, feature);
+    return feature;
+  }
+
+  function roadToLatLngs(feature) {
+    return (feature.geometry?.coordinates || []).map(([lng, lat]) => [lat, lng]);
+  }
+
+  function getRoadColor(type) {
+    const colors = { expressway: '#5b21b6', federal: '#2563eb', state: '#16a34a', district: '#d97706' };
+    return colors[type] || colors.expressway;
+  }
+
+  function snapToPolyline(point, path) {
+    let best = { point, segment: [[point[0], point[1]], [point[0], point[1]]], distance: Infinity };
+    for (let index = 0; index < path.length - 1; index += 1) {
+      const start = path[index];
+      const end = path[index + 1];
+      const candidate = closestPointOnSegment(point, start, end);
+      const distance = getPointDistance(point, candidate);
+      if (distance < best.distance) best = { point: candidate, segment: [start, end], distance };
+    }
+    return best;
+  }
+
+  function closestPointOnSegment(point, start, end) {
+    const x = point[1];
+    const y = point[0];
+    const x1 = start[1];
+    const y1 = start[0];
+    const x2 = end[1];
+    const y2 = end[0];
+    const dx = x2 - x1;
+    const dy = y2 - y1;
+    const lengthSq = dx * dx + dy * dy;
+    if (!lengthSq) return start;
+    const t = Math.max(0, Math.min(1, ((x - x1) * dx + (y - y1) * dy) / lengthSq));
+    return [y1 + t * dy, x1 + t * dx];
+  }
+
+  function offsetAlongRoad(snap, index, count) {
+    const [start, end] = snap.segment;
+    const latDelta = end[0] - start[0];
+    const lngDelta = end[1] - start[1];
+    const length = Math.hypot(latDelta, lngDelta) || 1;
+    const unitLat = latDelta / length;
+    const unitLng = lngDelta / length;
+    const spread = Math.min(0.0065, 0.14 / Math.max(1, count));
+    const along = (index - (count - 1) / 2) * spread;
+    const side = ((index % 3) - 1) * 0.0007;
+    return [
+      snap.point[0] + unitLat * along - unitLng * side,
+      snap.point[1] + unitLng * along + unitLat * side,
+    ];
+  }
+
+  function getPointDistance(a, b) {
+    return Math.hypot(a[0] - b[0], a[1] - b[1]);
   }
 
   function setBasemap(type) {

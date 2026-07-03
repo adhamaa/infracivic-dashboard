@@ -86,8 +86,46 @@
       <div class="timeline">
         ${incident.timeline.map(item => `<div class="tl-item"><span>${item.time}</span><p>${item.label}</p></div>`).join('')}
       </div>
+      ${renderEvidenceSection(incident)}
       ${assignMode ? `<div class="assignee-list">${D.ASSIGNEES.map(name => `<button type="button" data-assignee="${name}">${name}</button>`).join('')}</div>` : ''}
     `;
+  }
+
+  function renderEvidenceSection(incident) {
+    const damage = incident.evidence?.damage || [];
+    const repair = incident.evidence?.repair || [];
+    const groups = [
+      { title: 'Damage / defect evidence', items: damage },
+      { title: 'Completed repair evidence', items: repair },
+    ].filter(group => group.items.length);
+    if (!groups.length) return '';
+    return `
+      <div class="evidence-section">
+        ${groups.map(group => `
+          <div class="evidence-group">
+            <div class="evidence-head"><strong>${group.title}</strong><span>${group.items.length} image${group.items.length === 1 ? '' : 's'}</span></div>
+            <div class="evidence-strip">
+              ${group.items.map(item => renderEvidenceThumb(item)).join('')}
+            </div>
+          </div>
+        `).join('')}
+      </div>
+    `;
+  }
+
+  function renderEvidenceThumb(item) {
+    return `
+      <button type="button" class="evidence-thumb" data-evidence-id="${item.id}">
+        <img src="${item.src}" alt="${item.label}" data-fallback-src="${item.fallbackSrc}" loading="lazy" />
+        <span><strong>${item.label}</strong>${formatEvidenceTime(item.capturedAt)}</span>
+      </button>
+    `;
+  }
+
+  function formatEvidenceTime(value) {
+    if (!value) return '';
+    const date = new Date(value);
+    return ` · ${date.toLocaleDateString('en-MY', { day: '2-digit', month: 'short' })}`;
   }
 
   function renderDetailFooter(incident) {
@@ -113,6 +151,63 @@
     root.querySelectorAll('[data-assignee]').forEach(button => {
       button.addEventListener('click', () => assignIncident(incident.id, button.dataset.assignee));
     });
+    root.querySelectorAll('.evidence-thumb img[data-fallback-src]').forEach(image => {
+      image.addEventListener('error', () => {
+        if (image.dataset.fallbackApplied) return;
+        image.dataset.fallbackApplied = 'true';
+        image.src = image.dataset.fallbackSrc;
+      });
+    });
+    root.querySelectorAll('[data-evidence-id]').forEach(button => {
+      button.addEventListener('click', () => openEvidenceLightbox(incident, button.dataset.evidenceId));
+    });
+  }
+
+  function openEvidenceLightbox(incident, id) {
+    const items = [...(incident.evidence?.damage || []), ...(incident.evidence?.repair || [])];
+    let currentIndex = items.findIndex(entry => entry.id === id);
+    if (currentIndex < 0) return;
+    const lightbox = document.createElement('div');
+    lightbox.className = 'evidence-lightbox';
+    lightbox.setAttribute('role', 'dialog');
+    lightbox.setAttribute('aria-modal', 'true');
+
+    const renderItem = () => {
+      const item = items[currentIndex];
+      lightbox.innerHTML = `
+      <figure>
+        <button type="button" class="evidence-lightbox-close" aria-label="Close evidence image">&times;</button>
+        <img src="${item.src}" alt="${item.label}" data-fallback-src="${item.fallbackSrc}" />
+        <figcaption><strong>${item.label}</strong><span>${item.caption}${items.length > 1 ? ` · ${currentIndex + 1} of ${items.length}` : ''}</span></figcaption>
+      </figure>
+      `;
+      const image = lightbox.querySelector('img');
+      image.addEventListener('error', () => {
+        if (image.dataset.fallbackApplied) return;
+        image.dataset.fallbackApplied = 'true';
+        image.src = image.dataset.fallbackSrc;
+      });
+    };
+    const closeLightbox = () => {
+      document.removeEventListener('keydown', handleKeydown);
+      lightbox.remove();
+    };
+    const showOffset = offset => {
+      currentIndex = (currentIndex + offset + items.length) % items.length;
+      renderItem();
+    };
+    const handleKeydown = event => {
+      if (event.key === 'Escape') closeLightbox();
+      if (event.key === 'ArrowLeft' && items.length > 1) showOffset(-1);
+      if (event.key === 'ArrowRight' && items.length > 1) showOffset(1);
+    };
+    lightbox.addEventListener('click', event => {
+      if (event.target === lightbox || event.target.closest('.evidence-lightbox-close')) closeLightbox();
+    });
+    renderItem();
+    document.body.appendChild(lightbox);
+    lightbox.querySelector('.evidence-lightbox-close')?.focus();
+    document.addEventListener('keydown', handleKeydown);
   }
 
   function acknowledgeIncident(id) {

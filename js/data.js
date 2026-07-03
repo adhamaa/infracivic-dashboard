@@ -60,32 +60,32 @@ const STATUS_LABELS = {
 };
 
 const BASE_MAP_MARKERS = [
-  { lat:6.12, lng:102.24, count:8,  sev:'critical', state:'Kelantan',          km:'KM 275.2 (E1)', location:'Kota Bharu - Kuala Terengganu' },
-  { lat:5.33, lng:103.14, count:11, sev:'critical', state:'Terengganu',        km:'KM 112.3 (E2)', location:'Kuala Terengganu interchange' },
-  { lat:3.14, lng:101.62, count:5,  sev:'critical', state:'W.P. Kuala Lumpur', km:'KM 18.4 (E1)', location:'Kuala Lumpur urban corridor' },
+  { lat:6.12, lng:102.24, count:8,  sev:'critical', state:'Kelantan',          km:'KM 275.2 (E1)', location:'Kota Bharu - Kuala Terengganu', roadId:'E1', roadType:'expressway' },
+  { lat:5.33, lng:103.14, count:11, sev:'critical', state:'Terengganu',        km:'KM 112.3 (E2)', location:'Kuala Terengganu interchange', roadId:'E2', roadType:'expressway' },
+  { lat:3.14, lng:101.62, count:5,  sev:'critical', state:'W.P. Kuala Lumpur', km:'KM 18.4 (E1)', location:'Kuala Lumpur urban corridor', roadId:'E1', roadType:'expressway' },
   { lat:4.77, lng:100.94, count:4,  sev:'critical', state:'Perak',             km:'KM 64.1 (Federal Rte 5)', location:'Ipoh - Kuala Kangsar' },
   { lat:3.81, lng:103.32, count:19, sev:'high',     state:'Pahang',            km:'KM 91.5 (Route 3)', location:'Kuantan coastal route' },
-  { lat:4.24, lng:101.97, count:25, sev:'high',     state:'Pahang',            km:'KM 132.8 (E8)', location:'Central Pahang link' },
-  { lat:2.93, lng:102.44, count:29, sev:'high',     state:'Negeri Sembilan',   km:'KM 208.7 (E2)', location:'Negeri Sembilan approach' },
-  { lat:1.87, lng:103.33, count:20, sev:'high',     state:'Johor',             km:'KM 319.6 (E2)', location:'Johor central route' },
-  { lat:1.55, lng:103.77, count:15, sev:'high',     state:'Johor',             km:'KM 335.1 (E2)', location:'Johor Bahru entry' },
-  { lat:5.41, lng:100.33, count:13, sev:'medium',   state:'Pulau Pinang',      km:'KM 7.2 (E1)', location:'Penang island approach' },
-  { lat:4.60, lng:101.09, count:12, sev:'medium',   state:'Perak',             km:'KM 72.8 (E1)', location:'Ipoh northbound' },
-  { lat:3.45, lng:101.53, count:30, sev:'medium',   state:'Selangor',          km:'KM 442.0 (E1)', location:'Rawang - Kuala Lumpur' },
-  { lat:3.02, lng:101.73, count:30, sev:'medium',   state:'Selangor',          km:'KM 11.6 (E37)', location:'Kajang distributor' },
-  { lat:2.19, lng:102.25, count:36, sev:'medium',   state:'Melaka',            km:'KM 221.9 (E2)', location:'Melaka corridor' },
+  { lat:4.24, lng:101.97, count:25, sev:'high',     state:'Pahang',            km:'KM 132.8 (E8)', location:'Central Pahang link', roadId:'E8', roadType:'expressway' },
+  { lat:2.93, lng:102.44, count:29, sev:'high',     state:'Negeri Sembilan',   km:'KM 208.7 (E2)', location:'Negeri Sembilan approach', roadId:'E2', roadType:'expressway' },
+  { lat:1.87, lng:103.33, count:20, sev:'high',     state:'Johor',             km:'KM 319.6 (E2)', location:'Johor central route', roadId:'E2', roadType:'expressway' },
+  { lat:1.55, lng:103.77, count:15, sev:'high',     state:'Johor',             km:'KM 335.1 (E2)', location:'Johor Bahru entry', roadId:'E2', roadType:'expressway' },
+  { lat:5.41, lng:100.33, count:13, sev:'medium',   state:'Pulau Pinang',      km:'KM 7.2 (E1)', location:'Penang island approach', roadId:'E1', roadType:'expressway' },
+  { lat:4.60, lng:101.09, count:12, sev:'medium',   state:'Perak',             km:'KM 72.8 (E1)', location:'Ipoh northbound', roadId:'E1', roadType:'expressway' },
+  { lat:3.45, lng:101.53, count:30, sev:'medium',   state:'Selangor',          km:'KM 442.0 (E1)', location:'Rawang - Kuala Lumpur', roadId:'E1', roadType:'expressway' },
+  { lat:3.02, lng:101.73, count:30, sev:'medium',   state:'Selangor',          km:'KM 11.6 (E37)', location:'Kajang distributor', roadId:'E37', roadType:'expressway' },
+  { lat:2.19, lng:102.25, count:36, sev:'medium',   state:'Melaka',            km:'KM 221.9 (E2)', location:'Melaka corridor', roadId:'E2', roadType:'expressway' },
   { lat:6.00, lng:102.10, count:8,  sev:'low',      state:'Kelantan',          km:'KM 188.4 (Route 3)', location:'Kelantan coastal section' },
   { lat:3.80, lng:103.26, count:17, sev:'low',      state:'Pahang',            km:'KM 104.2 (Route 3)', location:'Kuantan bypass' },
-  { lat:1.90, lng:103.35, count:10, sev:'low',      state:'Johor',             km:'KM 292.4 (E2)', location:'Batu Pahat link' },
+  { lat:1.90, lng:103.35, count:10, sev:'low',      state:'Johor',             km:'KM 292.4 (E2)', location:'Batu Pahat link', roadId:'E2', roadType:'expressway' },
   { lat:5.85, lng:102.00, count:38, sev:'low',      state:'Kelantan',          km:'KM 219.0 (Route 8)', location:'Kelantan interior route' },
-  { lat:2.72, lng:101.94, count:18, sev:'low',      state:'Negeri Sembilan',   km:'KM 19.8 (E5)', location:'Seremban - Port Dickson' },
+  { lat:2.72, lng:101.94, count:18, sev:'low',      state:'Negeri Sembilan',   km:'KM 19.8 (E5)', location:'Seremban - Port Dickson', roadId:'E5', roadType:'expressway' },
   { lat:5.98, lng:116.08, count:18, sev:'critical', state:'Sabah',             km:'KM 12.5 (Pan Borneo)', location:'Kota Kinabalu urban approach' },
   { lat:5.43, lng:118.00, count:14, sev:'high',     state:'Sabah',             km:'KM 184.2 (Route 22)', location:'Sandakan east corridor' },
   { lat:1.56, lng:110.35, count:21, sev:'high',     state:'Sarawak',           km:'KM 8.9 (Pan Borneo)', location:'Kuching - Samarahan link' },
   { lat:3.17, lng:113.04, count:16, sev:'medium',   state:'Sarawak',           km:'KM 428.6 (Route 1)', location:'Bintulu industrial corridor' },
   { lat:4.39, lng:113.99, count:9,  sev:'low',      state:'Sarawak',           km:'KM 612.4 (Pan Borneo)', location:'Miri northern approach' },
   { lat:5.28, lng:115.24, count:6,  sev:'medium',   state:'W.P. Labuan',       km:'KM 4.1 (Labuan Ring Road)', location:'Labuan port connector' },
-  { lat:6.15, lng:100.37, count:12, sev:'medium',   state:'Kedah',             km:'KM 71.4 (E1)', location:'Alor Setar - Gurun section', concession:'PLUS', roadType:'expressway' },
+  { lat:6.15, lng:100.37, count:12, sev:'medium',   state:'Kedah',             km:'KM 71.4 (E1)', location:'Alor Setar - Gurun section', concession:'PLUS', roadType:'expressway', roadId:'E1' },
   { lat:6.44, lng:100.20, count:8,  sev:'low',      state:'Perlis',            km:'KM 11.8 (Route 7)', location:'Kangar urban distributor', concession:'PLUS', roadType:'federal' },
   { lat:2.93, lng:101.69, count:3,  sev:'low',      state:'W.P. Putrajaya',    km:'KM 3.2 (Persiaran Utara)', location:'Putrajaya administrative loop', concession:'SPRINT', roadType:'district' },
 ];
@@ -104,6 +104,48 @@ const DESCRIPTIONS = [
 const CREATED_OFFSETS_MINUTES = [2, 15, 32, 63, 95, 145, 220, 360, 510, 720, 1080, 1500, 2600, 4300, 7200, 11000, 18000, 26000, 39000];
 const INITIAL_STATUSES = ['open','open','acknowledged','open','open','acknowledged','open','open','resolved','open','open','open','acknowledged','resolved','open','open','resolved','open','open'];
 
+const EVIDENCE_KINDS = ['pavement', 'drainage', 'shoulder', 'guardrail', 'signage', 'bridge'];
+
+function buildEvidence(marker, index, createdAt, status) {
+  const kind = EVIDENCE_KINDS[index % EVIDENCE_KINDS.length];
+  const base = `assets/evidence/evidence-${(index % 5) + 1}`;
+  const reportedAt = new Date(new Date(createdAt).getTime() + 8 * 60 * 1000).toISOString();
+  const repairedAt = new Date(new Date(createdAt).getTime() + 42 * 60 * 60 * 1000).toISOString();
+  return {
+    damage: [
+      {
+        id: `${marker.state}-${index}-damage-a`,
+        kind,
+        label: 'Damage evidence',
+        caption: `${marker.km} · ${marker.location}`,
+        capturedAt: reportedAt,
+        src: `${base}-damage-a.jpg`,
+        fallbackSrc: `https://loremflickr.com/640/420/road,damage?lock=${1100 + index}`,
+      },
+      {
+        id: `${marker.state}-${index}-damage-b`,
+        kind,
+        label: 'Close inspection',
+        caption: `${ROAD_TYPE_LABELS[marker.roadType || ROAD_TYPES[index % ROAD_TYPES.length]]} defect close-up`,
+        capturedAt: reportedAt,
+        src: `${base}-damage-b.jpg`,
+        fallbackSrc: `https://loremflickr.com/640/420/highway,defect?lock=${1200 + index}`,
+      },
+    ],
+    repair: status === 'resolved' ? [
+      {
+        id: `${marker.state}-${index}-repair-a`,
+        kind,
+        label: 'Repaired image',
+        caption: `${marker.km} repair verified by field crew`,
+        capturedAt: repairedAt,
+        src: `${base}-repair-a.jpg`,
+        fallbackSrc: `https://loremflickr.com/640/420/road,repair?lock=${1300 + index}`,
+      },
+    ] : [],
+  };
+}
+
 function enrichMarker(marker, index) {
   const id = `inc-${String(index + 1).padStart(3, '0')}`;
   const offsetMinutes = CREATED_OFFSETS_MINUTES[index] || (CREATED_OFFSETS_MINUTES[CREATED_OFFSETS_MINUTES.length - 1] + (index - CREATED_OFFSETS_MINUTES.length + 1) * 3600);
@@ -113,6 +155,7 @@ function enrichMarker(marker, index) {
   const concession = marker.concession || CONCESSIONS[index % CONCESSIONS.length];
   const roadType = marker.roadType || ROAD_TYPES[index % ROAD_TYPES.length];
   const status = marker.status || INITIAL_STATUSES[index] || 'open';
+  const evidence = buildEvidence({ ...marker, roadType }, index, createdAt, status);
 
   return {
     ...marker,
@@ -124,6 +167,7 @@ function enrichMarker(marker, index) {
     createdAt,
     description,
     kmLabel: marker.km,
+    evidence,
     timeline: [
       { time: 'Detected', label: `${SEVERITY_LABELS[marker.sev]} defect logged by monitoring feed` },
       { time: 'Assigned', label: `${owner} assigned as response owner` },
