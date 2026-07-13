@@ -40,7 +40,9 @@ This information can come from the concession or the project team. For example, 
 
 So the dashboard is not only showing a point on the map. It can also show the working record behind that issue.
 
-From here, the team can assign the case to the right owner or team. They can also follow up until the work is completed. So basically, this helps streamline how the process goes from report, to action, to closure.
+For JKR, the benefit is visibility and control. JKR can see which issue has been reported, who is responsible, what evidence has been submitted, and whether the case is still pending, in progress, or completed. This helps JKR monitor concession performance without needing to chase updates from many different places.
+
+From here, the concession side can assign the case to the right owner, contractor, or field team. JKR can monitor the progress, review the evidence, and follow up until the work is completed. So basically, this helps streamline how the process goes from report, to action, to closure.
 
 Okay, now let us go back to the overview and look more at the data and statistics.
 
@@ -81,7 +83,9 @@ Maklumat ini boleh datang daripada pihak konsesi atau pasukan projek. Contohnya,
 
 Jadi dashboard ini bukan sekadar menunjukkan titik di atas peta. Ia juga boleh menunjukkan rekod kerja di sebalik isu tersebut.
 
-Daripada sini, pasukan boleh menugaskan kes kepada pemilik atau pasukan yang betul. Mereka juga boleh membuat susulan sehingga kerja selesai. Jadi secara asasnya, dashboard ini membantu melancarkan proses daripada laporan, kepada tindakan, sehingga penutupan kes.
+Untuk JKR, manfaat utamanya ialah dari segi pemantauan dan kawalan. JKR boleh lihat isu apa yang telah dilaporkan, siapa yang bertanggungjawab, bukti apa yang telah dimasukkan, dan sama ada kes itu masih tertangguh, sedang berjalan, atau telah selesai. Ini membantu JKR memantau prestasi konsesi tanpa perlu mendapatkan kemas kini daripada terlalu banyak tempat berasingan.
+
+Daripada sini, pihak konsesi boleh menugaskan kes kepada pemilik, kontraktor, atau pasukan tapak yang betul. JKR boleh memantau kemajuan, menyemak bukti, dan membuat susulan sehingga kerja selesai. Jadi secara asasnya, dashboard ini membantu melancarkan proses daripada laporan, kepada tindakan, sehingga penutupan kes.
 
 Okay, sekarang kita kembali kepada paparan keseluruhan dan lihat dari sudut data dan statistik.
 
