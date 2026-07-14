@@ -129,13 +129,9 @@
   }
 
   function renderDetailFooter(incident) {
-    const acknowledged = incident.status === 'acknowledged';
-    const resolved = incident.status === 'resolved';
+    // JKR view is read-only monitoring; only Close is shown.
     return `
       <button class="modal-btn secondary" type="button" data-modal-close>Close</button>
-      <button class="modal-btn" type="button" data-detail-action="assign">Assign</button>
-      <button class="modal-btn" type="button" data-detail-action="ack" ${acknowledged || resolved ? 'disabled' : ''}>Acknowledge</button>
-      <button class="modal-btn danger" type="button" data-detail-action="resolve" ${resolved ? 'disabled' : ''}>Resolve</button>
     `;
   }
 
